@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 <div class="app-shell">
@@ -27,7 +27,10 @@
   <!-- ============ Sidebar (desktop) ============ -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <span class="brand-mark">Melagram</span>
+      <div class="sidebar-brand-row">
+        <img src="icons/icon-maskable-192.png" alt="" class="brand-logo">
+        <span class="brand-mark">Melagram</span>
+      </div>
       <span class="brand-sub">Luca &amp; Mela</span>
     </div>
     <nav class="sidebar-nav">
@@ -48,12 +51,13 @@
 
   <!-- ============ Mobile top bar ============ -->
   <header class="mobile-topbar">
+    <img src="icons/icon-maskable-192.png" alt="" class="brand-logo brand-logo-sm">
     <span class="brand-mark-sm">Melagram</span>
   </header>
 
   <!-- ============ Main column ============ -->
   <main class="main-col">
-    <div class="view-topbar">
+    <div class="view-topbar" id="viewTopbar">
       <h1 id="viewTitle">Home</h1>
     </div>
 
@@ -262,7 +266,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="js/app.js?v=5"></script>
+<script src="js/app.js?v=6"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

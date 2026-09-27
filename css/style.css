@@ -81,6 +81,7 @@ h1::after {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 9px;
   padding: 14px 18px;
   background: var(--surface);
   box-shadow: 0 1px 0 var(--border), var(--shadow-sm);
@@ -93,6 +94,16 @@ h1::after {
   color: var(--accent);
 }
 .brand-mark-sm { font-size: 1.45rem; }
+
+.brand-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px var(--border);
+}
+.brand-logo-sm { width: 26px; height: 26px; }
 
 .icon-btn {
   width: 40px;
@@ -653,8 +664,10 @@ h1::after {
     gap: 28px;
   }
 
-  .sidebar-brand { display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-brand { display: flex; flex-direction: column; gap: 6px; }
+  .sidebar-brand-row { display: flex; align-items: center; gap: 10px; }
   .sidebar-brand .brand-mark { font-size: 1.7rem; }
+  .sidebar-brand-row .brand-logo { width: 40px; height: 40px; }
   .brand-sub {
     font-size: 0.72rem;
     letter-spacing: 0.08em;

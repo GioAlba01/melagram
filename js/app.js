@@ -128,7 +128,8 @@ function switchView(view) {
 
   els.viewHome.hidden = view !== 'home';
   els.viewProfile.hidden = view !== 'profile';
-  els.viewTitle.textContent = view === 'home' ? 'Home' : 'Il tuo profilo';
+  els.viewTopbar.hidden = view === 'home';
+  els.viewTitle.textContent = 'Il tuo profilo';
 
   reflowActiveView();
 }
