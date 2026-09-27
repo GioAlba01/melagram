@@ -952,6 +952,41 @@ els.btnExport.addEventListener('click', async () => {
 });
 
 // ============================================================================
+// Reset di tutti i profili (solo admin) — cancella nomi/password degli
+// ospiti, NON tocca foto, like, commenti o news. Serve a far ripartire da
+// zero il login se durante il matrimonio qualcosa nei profili si blocca.
+// ============================================================================
+els.btnResetProfiles.addEventListener('click', async () => {
+  if (!state.isAdmin) { toast('Devi essere connesso come amministratore.'); return; }
+
+  const conferma = window.prompt(
+    'Questo cancella TUTTI i profili (nome + password) degli invitati: dovranno rifare la registrazione. Le foto, i like, i commenti e le news NON vengono toccati.\n\nPer confermare scrivi RESET (tutto maiuscolo):'
+  );
+  if (conferma === null) return;
+  if (conferma.trim().toUpperCase() !== 'RESET') {
+    toast('Reset annullato.');
+    return;
+  }
+
+  toast('Reset dei profili in corso…', 15000);
+  const { error } = await sb.rpc('reset_all_guests');
+  els.toast.hidden = true;
+  if (error) {
+    toast('Errore: ' + error.message);
+    return;
+  }
+
+  toast('Tutti i profili sono stati resettati.');
+  els.modalAdmin.hidden = true;
+
+  // Anche questo dispositivo deve ripartire da zero con nome/password,
+  // dato che il proprio profilo ospite (se ne aveva uno) non esiste più.
+  localStorage.removeItem('melagram_guest_id');
+  localStorage.removeItem('melagram_guest_name');
+  setTimeout(() => window.location.reload(), 1200);
+});
+
+// ============================================================================
 // Realtime
 // ============================================================================
 function subscribeRealtime() {
