@@ -384,9 +384,11 @@ async function deleteComment(commentId) {
 // Upload foto
 // ============================================================================
 let pendingFile = null;
+let pendingCompression = null;
 
 function resetUploadModal() {
   pendingFile = null;
+  pendingCompression = null;
   els.inputFileCamera.value = '';
   els.inputFileGallery.value = '';
   els.uploadChoice.hidden = false;
@@ -403,12 +405,53 @@ els.fab.addEventListener('click', () => {
 
 els.btnCancelUpload.addEventListener('click', () => { els.modalUpload.hidden = true; });
 
+// Ridimensiona e comprime la foto prima di caricarla (max 1920px sul lato
+// lungo, qualità 85%): pesa molto meno ma resta nitida su schermo.
+async function compressImage(file, maxDim = 1920, quality = 0.85) {
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch (e) {
+    bitmap = await createImageBitmap(file);
+  }
+
+  let { width, height } = bitmap;
+  if (width > maxDim || height > maxDim) {
+    if (width >= height) {
+      height = Math.round(height * (maxDim / width));
+      width = maxDim;
+    } else {
+      width = Math.round(width * (maxDim / height));
+      height = maxDim;
+    }
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close?.();
+
+  return await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+}
+
 function handleFileChosen(file) {
   if (!file) return;
-  pendingFile = file;
+  // Anteprima immediata con il file originale, poi si aggiorna con la versione compressa.
   els.filePreview.src = URL.createObjectURL(file);
   els.uploadChoice.hidden = true;
   els.filePreviewWrap.hidden = false;
+  pendingFile = file;
+
+  pendingCompression = compressImage(file)
+    .then(blob => {
+      if (blob) {
+        pendingFile = blob;
+        els.filePreview.src = URL.createObjectURL(blob);
+      }
+    })
+    .catch(() => { /* se la compressione fallisce, si carica il file originale */ });
 }
 
 els.inputFileCamera.addEventListener('change', () => handleFileChosen(els.inputFileCamera.files[0]));
@@ -428,11 +471,12 @@ els.btnSubmitUpload.addEventListener('click', async () => {
   els.btnSubmitUpload.disabled = true;
 
   try {
-    const ext = (pendingFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-    const path = `${state.guestId}/${Date.now()}_${Math.floor(Math.random() * 1e6)}.${ext}`;
+    if (pendingCompression) await pendingCompression; // aspetta che la compressione sia finita
+
+    const path = `${state.guestId}/${Date.now()}_${Math.floor(Math.random() * 1e6)}.jpg`;
 
     const { error: upErr } = await sb.storage.from(BUCKET).upload(path, pendingFile, {
-      contentType: pendingFile.type || 'image/jpeg',
+      contentType: 'image/jpeg',
     });
     if (upErr) throw upErr;
 
