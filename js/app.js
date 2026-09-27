@@ -70,7 +70,7 @@ function loadIdentity() {
   // Passaggio al sistema nome+password: azzera l'identità testuale salvata
   // in locale dalle versioni precedenti (senza password), una volta sola,
   // così tutti ripassano dal nuovo login/registrazione.
-  const IDENTITY_VERSION = '2';
+  const IDENTITY_VERSION = '3';
   if (localStorage.getItem('melagram_identity_version') !== IDENTITY_VERSION) {
     localStorage.removeItem('melagram_guest_name');
     localStorage.setItem('melagram_identity_version', IDENTITY_VERSION);
