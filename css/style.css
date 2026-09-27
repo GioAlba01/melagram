@@ -589,6 +589,50 @@ h1::after {
 }
 
 /* ==========================================================================
+   Banner di installazione PWA
+   ========================================================================== */
+.install-banner {
+  position: fixed;
+  left: 14px; right: 14px;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px 40px 14px 16px;
+  box-shadow: var(--shadow);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  animation: install-in 0.25s ease;
+}
+@keyframes install-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.install-text { margin: 0 0 8px; }
+.install-action {
+  border: none;
+  background: #fff;
+  color: var(--accent);
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.install-close {
+  position: absolute;
+  top: 10px; right: 12px;
+  border: none;
+  background: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+/* ==========================================================================
    Desktop layout (≥760px) — sidebar sostituisce top/bottom bar mobile
    ========================================================================== */
 @media (min-width: 760px) {
@@ -683,4 +727,11 @@ h1::after {
 
   .fab { bottom: 28px; right: 36px; }
   .toast { bottom: 28px; }
+
+  .install-banner {
+    left: auto;
+    right: 28px;
+    bottom: 28px;
+    max-width: 320px;
+  }
 }

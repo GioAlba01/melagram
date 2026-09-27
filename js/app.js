@@ -700,6 +700,64 @@ function subscribeRealtime() {
 }
 
 // ============================================================================
+// Banner di installazione PWA (Android: prompt reale; iOS: istruzioni)
+// ============================================================================
+let deferredInstallPrompt = null;
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+
+function showInstallBanner() {
+  if (isStandalone()) return;
+  if (localStorage.getItem('melagram_install_dismissed')) return;
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  if (isIOS) {
+    els.installText.textContent = 'Aggiungi Melagram alla schermata Home: tocca Condividi ⬆️ qui sotto, poi "Aggiungi a Home".';
+    els.btnInstallAction.hidden = true;
+  } else if (deferredInstallPrompt) {
+    els.installText.textContent = 'Installa Melagram sulla schermata Home per aprirla come un’app.';
+    els.btnInstallAction.hidden = false;
+  } else {
+    return;
+  }
+
+  els.installBanner.hidden = false;
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner();
+});
+
+els.btnInstallAction.addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  els.installBanner.hidden = true;
+  localStorage.setItem('melagram_install_dismissed', '1');
+});
+
+els.btnInstallClose.addEventListener('click', () => {
+  els.installBanner.hidden = true;
+  localStorage.setItem('melagram_install_dismissed', '1');
+});
+
+window.addEventListener('appinstalled', () => {
+  els.installBanner.hidden = true;
+  localStorage.setItem('melagram_install_dismissed', '1');
+});
+
+if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+  setTimeout(showInstallBanner, 1500);
+}
+
+// ============================================================================
 // Avvio
 // ============================================================================
 (async function init() {

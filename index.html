@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 <div class="app-shell">
@@ -197,6 +197,12 @@
 
   <div id="toast" class="toast" hidden></div>
 
+  <div id="installBanner" class="install-banner" hidden>
+    <button id="btnInstallClose" class="install-close" aria-label="Chiudi">✕</button>
+    <p id="installText" class="install-text"></p>
+    <button id="btnInstallAction" class="install-action" hidden>Installa</button>
+  </div>
+
   <!-- comment row template -->
   <template id="tplComment">
     <div class="comment-row">
@@ -256,7 +262,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/app.js?v=5"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
