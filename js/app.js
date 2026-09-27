@@ -762,6 +762,7 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
 // Avvio
 // ============================================================================
 (async function init() {
+  switchView('home'); // stato iniziale certo: niente flash della scritta "Home"
   loadIdentity();
   const { data: { session } } = await sb.auth.getSession();
   setAdminUI(!!session);

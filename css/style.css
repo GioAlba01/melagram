@@ -20,6 +20,8 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 
+html { touch-action: manipulation; }
+
 body {
   background: var(--bg);
   color: var(--ink);
@@ -29,6 +31,7 @@ body {
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 img { max-width: 100%; }
@@ -96,14 +99,13 @@ h1::after {
 .brand-mark-sm { font-size: 1.45rem; }
 
 .brand-logo {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  box-shadow: 0 0 0 1px var(--border);
 }
-.brand-logo-sm { width: 26px; height: 26px; }
+.brand-logo-sm { width: 38px; height: 38px; }
 
 .icon-btn {
   width: 40px;
@@ -354,7 +356,7 @@ h1::after {
   border-radius: 10px;
   padding: 6px 10px;
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: 16px;
   background: var(--surface-2);
   color: var(--ink);
 }
@@ -390,7 +392,7 @@ h1::after {
   background: var(--surface-2);
   color: var(--ink);
   font-family: inherit;
-  font-size: 0.88rem;
+  font-size: 16px;
 }
 .comment-send {
   border: none;
@@ -462,7 +464,7 @@ h1::after {
   background: var(--surface-2);
   color: var(--ink);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 16px;
   width: 100%;
   resize: none;
 }
@@ -667,7 +669,7 @@ h1::after {
   .sidebar-brand { display: flex; flex-direction: column; gap: 6px; }
   .sidebar-brand-row { display: flex; align-items: center; gap: 10px; }
   .sidebar-brand .brand-mark { font-size: 1.7rem; }
-  .sidebar-brand-row .brand-logo { width: 40px; height: 40px; }
+  .sidebar-brand-row .brand-logo { width: 54px; height: 54px; }
   .brand-sub {
     font-size: 0.72rem;
     letter-spacing: 0.08em;
