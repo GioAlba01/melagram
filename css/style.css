@@ -80,7 +80,7 @@ h1::after {
   z-index: 30;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 14px 18px;
   background: var(--surface);
   box-shadow: 0 1px 0 var(--border), var(--shadow-sm);
@@ -196,6 +196,57 @@ h1::after {
   font-style: italic;
   font-size: 1.15rem;
 }
+
+/* ---- Zona amministratore (solo dentro Profilo) ---- */
+.admin-zone {
+  margin: 8px 14px 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.admin-link {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  padding: 6px 0;
+}
+.admin-link:active { color: var(--accent); }
+
+.admin-tools {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.admin-tools-title {
+  margin: 0 0 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.admin-tool {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 12px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background .15s ease;
+}
+.admin-tool svg { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
+.admin-tool:active { background: var(--surface-2); }
 
 .card {
   background: var(--surface);

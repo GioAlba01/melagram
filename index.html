@@ -32,30 +32,18 @@
     <div class="sidebar-footer">
       <p class="guest-chip">Stai postando come <strong id="guestNameLabel">…</strong></p>
       <button class="link-btn js-change-name">Cambia nome</button>
-      <button class="sidebar-admin-btn js-admin-open">Area amministratore</button>
     </div>
   </aside>
 
   <!-- ============ Mobile top bar ============ -->
   <header class="mobile-topbar">
     <span class="brand-mark-sm">Melagram</span>
-    <button class="icon-btn js-admin-open" title="Area amministratore">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-    </button>
   </header>
 
   <!-- ============ Main column ============ -->
   <main class="main-col">
     <div class="view-topbar">
       <h1 id="viewTitle">Home</h1>
-      <div class="view-actions">
-        <button id="btnSlideshow" class="icon-btn admin-only" title="Modalità schermo" hidden>
-          <svg viewBox="0 0 24 24"><path d="M4 5h16v11H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 20h6M12 16v4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
-        </button>
-        <button id="btnExport" class="icon-btn admin-only" title="Esporta tutte le foto" hidden>
-          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
-        </button>
-      </div>
     </div>
 
     <!-- Home view -->
@@ -75,6 +63,21 @@
       <div id="feedProfile" class="feed"></div>
       <div id="emptyProfile" class="empty-state" hidden>
         <p>Non hai ancora pubblicato foto. Tocca il pulsante <strong>+</strong> per iniziare.</p>
+      </div>
+
+      <div class="admin-zone">
+        <button class="admin-link js-admin-open">Area amministratore</button>
+        <div class="admin-tools admin-only" hidden>
+          <p class="admin-tools-title">Strumenti amministratore</p>
+          <button id="btnSlideshow" class="admin-tool">
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v11H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 20h6M12 16v4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+            <span>Modalità schermo</span>
+          </button>
+          <button id="btnExport" class="admin-tool">
+            <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+            <span>Esporta tutte le foto</span>
+          </button>
+        </div>
       </div>
     </section>
   </main>
