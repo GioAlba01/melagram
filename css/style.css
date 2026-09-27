@@ -545,6 +545,8 @@ h2 {
 
 .field-error { color: var(--danger); font-size: 0.8rem; margin: 0; }
 
+#namePasswordWrap { display: flex; flex-direction: column; gap: 8px; }
+
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 
 .btn-primary, .btn-ghost, .btn-danger {

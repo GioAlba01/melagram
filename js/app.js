@@ -67,6 +67,15 @@ function pathFromPublicUrl(url) {
 // Identità ospite
 // ============================================================================
 function loadIdentity() {
+  // Passaggio al sistema nome+password: azzera l'identità testuale salvata
+  // in locale dalle versioni precedenti (senza password), una volta sola,
+  // così tutti ripassano dal nuovo login/registrazione.
+  const IDENTITY_VERSION = '2';
+  if (localStorage.getItem('melagram_identity_version') !== IDENTITY_VERSION) {
+    localStorage.removeItem('melagram_guest_name');
+    localStorage.setItem('melagram_identity_version', IDENTITY_VERSION);
+  }
+
   state.guestId = localStorage.getItem('melagram_guest_id');
   if (!state.guestId) {
     state.guestId = uuid();
@@ -94,75 +103,124 @@ function refreshAdminZoneVisibility() {
   els.adminZone.hidden = !isTrigger;
 }
 
+// Stato del piccolo "wizard" a due tap del modale nome:
+// 1° tap → controlla se il nome esiste già (mostra il campo password)
+// 2° tap → accede (nome esistente) o crea il profilo (nome libero)
+let nameFlowState = null; // null | 'exists' | 'free'
+let nameFlowFor = null;   // nome (minuscolo) a cui si riferisce nameFlowState
+
+function resetNameFlow() {
+  nameFlowState = null;
+  nameFlowFor = null;
+  els.namePasswordWrap.hidden = true;
+  els.inputNamePassword.value = '';
+  els.saveNameLabel.textContent = 'Continua';
+}
+
+function setNameBusy(busy) {
+  els.btnSaveName.disabled = busy;
+  els.saveNameSpinner.hidden = !busy;
+}
+
 function openNameModal() {
   els.inputName.value = state.guestName || '';
   els.nameError.hidden = true;
+  resetNameFlow();
   els.modalName.hidden = false;
   setTimeout(() => els.inputName.focus(), 50);
 }
 
+function applyLogin(guestId, name) {
+  state.guestId = guestId;
+  state.guestName = name;
+  localStorage.setItem('melagram_guest_id', state.guestId);
+  localStorage.setItem('melagram_guest_name', state.guestName);
+  updateGuestLabels();
+  els.modalName.hidden = true;
+}
+
+els.inputName.addEventListener('input', () => {
+  // Se l'utente modifica il nome dopo un controllo già fatto, si riparte da capo.
+  if (nameFlowState && els.inputName.value.trim().toLowerCase() !== nameFlowFor) {
+    resetNameFlow();
+    els.nameError.hidden = true;
+  }
+});
+
 els.btnSaveName.addEventListener('click', async () => {
-  const name = els.inputName.value.trim();
+  const name = els.inputName.value.trim().slice(0, 40);
   if (!name) {
     els.nameError.textContent = 'Inserisci il tuo nome.';
     els.nameError.hidden = false;
     return;
   }
-  const finalName = name.slice(0, 40);
   els.nameError.hidden = true;
+  const key = name.toLowerCase();
 
-  // Se il nome non cambia rispetto a quello già salvato, non serve
-  // ricontrollare nulla nel database.
-  if (finalName === state.guestName) {
-    els.modalName.hidden = true;
+  // 1° tap: il nome non è ancora stato verificato → controlla se esiste già.
+  if (nameFlowState === null || nameFlowFor !== key) {
+    setNameBusy(true);
+    const { data: exists, error } = await sb.rpc('guest_name_exists', { p_name: name });
+    setNameBusy(false);
+
+    if (error) {
+      els.nameError.textContent = 'Errore di connessione, riprova.';
+      els.nameError.hidden = false;
+      return;
+    }
+
+    nameFlowFor = key;
+    nameFlowState = exists ? 'exists' : 'free';
+    els.namePasswordWrap.hidden = false;
+    els.namePasswordHint.textContent = exists
+      ? 'Questo nome esiste già: inserisci la password per accedere al tuo profilo.'
+      : 'Nome libero: scegli una password per proteggerlo (almeno 3 caratteri).';
+    els.saveNameLabel.textContent = exists ? 'Accedi' : 'Crea profilo';
+    setTimeout(() => els.inputNamePassword.focus(), 50);
     return;
   }
 
-  els.btnSaveName.disabled = true;
-
-  // Controlla se qualcun altro ha già preso questo nome (senza distinzione
-  // tra maiuscole/minuscole), così ogni invitato ha un nome unico.
-  const escapedName = finalName.replace(/[%_]/g, m => '\\' + m);
-  const { data: existing, error: checkError } = await sb
-    .from('guests')
-    .select('guest_id')
-    .ilike('name', escapedName)
-    .maybeSingle();
-
-  if (checkError) {
-    els.btnSaveName.disabled = false;
-    els.nameError.textContent = 'Errore di connessione, riprova.';
+  // 2° tap: accesso o creazione del profilo con la password inserita.
+  const password = els.inputNamePassword.value;
+  if (!password) {
+    els.nameError.textContent = 'Inserisci la password.';
     els.nameError.hidden = false;
     return;
   }
 
-  if (existing && existing.guest_id !== state.guestId) {
-    els.btnSaveName.disabled = false;
-    els.nameError.textContent = 'Questo nome è già stato scelto da un altro invitato. Provane un altro.';
-    els.nameError.hidden = false;
-    return;
+  if (nameFlowState === 'exists') {
+    setNameBusy(true);
+    const { data: guestId, error } = await sb.rpc('login_guest', { p_name: name, p_password: password });
+    setNameBusy(false);
+    if (error || !guestId) {
+      els.nameError.textContent = 'Password errata. Riprova, oppure scegli un nome diverso.';
+      els.nameError.hidden = false;
+      return;
+    }
+    applyLogin(guestId, name);
+  } else {
+    if (password.length < 3) {
+      els.nameError.textContent = 'La password deve avere almeno 3 caratteri.';
+      els.nameError.hidden = false;
+      return;
+    }
+    setNameBusy(true);
+    const { data: guestId, error } = await sb.rpc('register_guest', { p_name: name, p_password: password });
+    setNameBusy(false);
+    if (error || !guestId) {
+      els.nameError.textContent = 'Questo nome è appena stato preso da qualcun altro. Provane un altro.';
+      els.nameError.hidden = false;
+      resetNameFlow();
+      return;
+    }
+    applyLogin(guestId, name);
   }
-
-  // Registra (o aggiorna) il nome legato a questo dispositivo.
-  const { error: saveError } = await sb
-    .from('guests')
-    .upsert({ guest_id: state.guestId, name: finalName }, { onConflict: 'guest_id' });
-
-  els.btnSaveName.disabled = false;
-
-  if (saveError) {
-    els.nameError.textContent = 'Questo nome è già stato scelto da un altro invitato. Provane un altro.';
-    els.nameError.hidden = false;
-    return;
-  }
-
-  state.guestName = finalName;
-  localStorage.setItem('melagram_guest_name', state.guestName);
-  updateGuestLabels();
-  els.modalName.hidden = true;
 });
 
 els.inputName.addEventListener('keydown', e => {
+  if (e.key === 'Enter') els.btnSaveName.click();
+});
+els.inputNamePassword.addEventListener('keydown', e => {
   if (e.key === 'Enter') els.btnSaveName.click();
 });
 
@@ -180,6 +238,7 @@ function requireName() {
 // ============================================================================
 function switchView(view) {
   state.activeView = view;
+  localStorage.setItem('melagram_active_view', view);
 
   document.querySelectorAll('.js-nav').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.view === view);
@@ -917,7 +976,10 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
 // Avvio
 // ============================================================================
 (async function init() {
-  switchView('home'); // stato iniziale certo: niente flash della scritta "Home"
+  // Riapre la stessa sezione in cui ci si trovava prima del reload, invece
+  // di tornare sempre alla Home.
+  const savedView = localStorage.getItem('melagram_active_view');
+  switchView(['home', 'news', 'profile'].includes(savedView) ? savedView : 'home');
   loadIdentity();
   const { data: { session } } = await sb.auth.getSession();
   setAdminUI(!!session);

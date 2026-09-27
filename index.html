@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
 <div class="app-shell">
@@ -135,11 +135,18 @@
   <div id="modalName" class="modal-overlay" hidden>
     <div class="modal-card">
       <h2>Come ti chiami?</h2>
-      <p class="modal-sub">Il tuo nome comparirà sotto le foto e i commenti che pubblichi.</p>
+      <p class="modal-sub">Il tuo nome comparirà sotto le foto, i messaggi e i commenti che pubblichi.</p>
       <input id="inputName" type="text" placeholder="Es. Giovanni" maxlength="40" autocomplete="off">
+      <div id="namePasswordWrap" hidden>
+        <p id="namePasswordHint" class="modal-sub"></p>
+        <input id="inputNamePassword" type="password" placeholder="Password" autocomplete="off">
+      </div>
       <p id="nameError" class="field-error" hidden></p>
       <div class="modal-actions">
-        <button id="btnSaveName" class="btn-primary">Continua</button>
+        <button id="btnSaveName" class="btn-primary">
+          <span id="saveNameLabel">Continua</span>
+          <span id="saveNameSpinner" class="spinner" hidden></span>
+        </button>
       </div>
     </div>
   </div>
@@ -297,7 +304,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="js/app.js?v=9"></script>
+<script src="js/app.js?v=10"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
