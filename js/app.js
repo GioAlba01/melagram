@@ -353,7 +353,7 @@ function renderCard(postId, entry) {
   node.querySelector('.card-caption').textContent = p.caption || '';
 
   const delBtn = node.querySelector('.card-delete');
-  delBtn.hidden = !state.isAdmin;
+  delBtn.hidden = !(state.isAdmin || p.guest_id === state.guestId);
   delBtn.addEventListener('click', () => deletePost(postId));
 
   const likeBtn = node.querySelector('.like-btn');
@@ -516,9 +516,9 @@ function resetUploadModal() {
   pendingFile = null;
   pendingCompression = null;
   els.inputFileCamera.value = '';
-  els.inputFileGallery.value = '';
   els.uploadChoice.hidden = false;
   els.filePreviewWrap.hidden = true;
+  els.btnSavePhone.hidden = true;
   els.inputCaption.value = '';
   els.uploadError.hidden = true;
 }
@@ -568,6 +568,7 @@ function handleFileChosen(file) {
   els.filePreview.src = URL.createObjectURL(file);
   els.uploadChoice.hidden = true;
   els.filePreviewWrap.hidden = false;
+  els.btnSavePhone.hidden = false;
   pendingFile = file;
 
   pendingCompression = compressImage(file)
@@ -581,9 +582,35 @@ function handleFileChosen(file) {
 }
 
 els.inputFileCamera.addEventListener('change', () => handleFileChosen(els.inputFileCamera.files[0]));
-els.inputFileGallery.addEventListener('change', () => handleFileChosen(els.inputFileGallery.files[0]));
 
 els.btnClearFile.addEventListener('click', resetUploadModal);
+
+// Salva una copia della foto sul telefono di chi la scatta (facoltativo):
+// usa la condivisione nativa se disponibile, altrimenti un download diretto.
+els.btnSavePhone.addEventListener('click', async () => {
+  if (!pendingFile) return;
+  const fileToSave = pendingFile instanceof File
+    ? pendingFile
+    : new File([pendingFile], 'melagram-foto.jpg', { type: 'image/jpeg' });
+
+  if (navigator.canShare && navigator.canShare({ files: [fileToSave] })) {
+    try {
+      await navigator.share({ files: [fileToSave] });
+      return;
+    } catch (e) {
+      // Annullato dall'utente o non supportato: si prova con il download qui sotto.
+    }
+  }
+
+  const url = URL.createObjectURL(fileToSave);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'melagram-foto.jpg';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
 
 els.btnSubmitUpload.addEventListener('click', async () => {
   if (!pendingFile) {
@@ -782,7 +809,11 @@ sb.auth.onAuthStateChange((_event, session) => {
 });
 
 function refreshAllAdminButtons() {
-  document.querySelectorAll('.card-delete').forEach(b => { b.hidden = !state.isAdmin; });
+  // Il pulsante elimina foto si vede per l'admin oppure per chi ha pubblicato quella foto.
+  for (const entry of state.posts.values()) {
+    const delBtn = entry.cardEl?.querySelector('.card-delete');
+    if (delBtn) delBtn.hidden = !(state.isAdmin || entry.data.guest_id === state.guestId);
+  }
   document.querySelectorAll('.comment-admin-actions').forEach(b => { b.hidden = !state.isAdmin; });
   document.querySelectorAll('.comment-edit-btn, .comment-delete').forEach(b => { b.hidden = !state.isAdmin; });
   document.querySelectorAll('.news-delete').forEach(b => { b.hidden = !state.isAdmin; });

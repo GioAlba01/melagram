@@ -201,6 +201,10 @@ h2 {
 #feedProfile .card-delete { width: 26px; height: 26px; top: 5px; right: 5px; }
 #feedProfile .card-delete svg { width: 13px; height: 13px; }
 
+/* Il pulsante elimina foto si vede solo nel Profilo (proprie foto o admin),
+   mai mischiato nella Home tra le foto di tutti. */
+#feedHome .card-delete { display: none !important; }
+
 .empty-state {
   text-align: center;
   color: var(--muted);
@@ -610,6 +614,19 @@ h2 {
   position: absolute;
   bottom: 10px;
   right: 10px;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 14px;
+  background: rgba(20, 8, 10, 0.6);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.save-phone-btn {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
   border: none;
   border-radius: 20px;
   padding: 8px 14px;
