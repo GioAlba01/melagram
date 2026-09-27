@@ -10,8 +10,9 @@
   --accent: #7A1F2E;
   --accent-dark: #5C1420;
   --accent-ink: #FFFFFF;
-  --border: rgba(36, 16, 18, 0.10);
-  --shadow: 0 8px 28px rgba(36, 16, 18, 0.09);
+  --border: rgba(36, 16, 18, 0.09);
+  --shadow: 0 10px 30px rgba(36, 16, 18, 0.10);
+  --shadow-sm: 0 2px 10px rgba(36, 16, 18, 0.06);
   --danger: #A23B3B;
   color-scheme: light;
 }
@@ -41,26 +42,36 @@ h1, h2 {
   text-wrap: balance;
 }
 h2 { font-size: 1.55rem; margin-bottom: 4px; }
-h1 { font-size: 1.4rem; color: var(--accent); }
+
+h1 {
+  font-size: 1.45rem;
+  color: var(--ink);
+}
+h1::after {
+  content: '';
+  display: block;
+  width: 34px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+  margin-top: 7px;
+}
 
 /* ==========================================================================
-   Shell layout
+   Shell layout — a blocchi su mobile, in riga solo da desktop in su
    ========================================================================== */
 .app-shell {
   min-height: 100%;
-  display: flex;
+  display: block;
 }
 
 .main-col {
-  flex: 1;
   min-width: 0;
-  padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ---- Sidebar (desktop only) ---- */
-.sidebar {
-  display: none;
-}
+.sidebar { display: none; }
 
 /* ---- Mobile top bar ---- */
 .mobile-topbar {
@@ -70,9 +81,9 @@ h1 { font-size: 1.4rem; color: var(--accent); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 18px;
+  padding: 14px 18px;
   background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--border), var(--shadow-sm);
 }
 
 .brand-mark, .brand-mark-sm {
@@ -81,7 +92,7 @@ h1 { font-size: 1.4rem; color: var(--accent); }
   font-weight: 600;
   color: var(--accent);
 }
-.brand-mark-sm { font-size: 1.4rem; }
+.brand-mark-sm { font-size: 1.45rem; }
 
 .icon-btn {
   width: 40px;
@@ -95,9 +106,10 @@ h1 { font-size: 1.4rem; color: var(--accent); }
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  transition: background .15s ease, transform .1s ease;
 }
 .icon-btn svg { width: 19px; height: 19px; }
-.icon-btn:active { background: var(--surface-2); }
+.icon-btn:active { background: var(--surface-2); transform: scale(0.94); }
 
 /* ---- Mobile bottom tab bar ---- */
 .mobile-tabbar {
@@ -106,11 +118,12 @@ h1 { font-size: 1.4rem; color: var(--accent); }
   z-index: 30;
   display: flex;
   background: var(--surface);
-  border-top: 1px solid var(--border);
+  box-shadow: 0 -1px 0 var(--border), 0 -6px 20px rgba(36,16,18,0.06);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .tab-item {
+  position: relative;
   flex: 1;
   border: none;
   background: none;
@@ -118,27 +131,40 @@ h1 { font-size: 1.4rem; color: var(--accent); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 10px 0 8px;
+  gap: 4px;
+  padding: 11px 0 9px;
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  transition: color .15s ease;
 }
-.tab-item svg { width: 23px; height: 23px; }
+.tab-item svg { width: 23px; height: 23px; transition: transform .15s ease; }
+.tab-item:active svg { transform: scale(0.88); }
 .tab-item.active { color: var(--accent); }
+.tab-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: var(--accent);
+}
 
 /* ==========================================================================
-   View topbar (page title + admin actions)
+   View topbar (titolo pagina + azioni admin)
    ========================================================================== */
 .view-topbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 18px 18px 6px;
+  padding: 22px 18px 10px;
   max-width: 640px;
   margin: 0 auto;
 }
-.view-actions { display: flex; gap: 8px; }
+.view-actions { display: flex; gap: 8px; margin-top: 2px; }
 
 /* ==========================================================================
    Feed
@@ -146,14 +172,14 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 .view { max-width: 640px; margin: 0 auto; }
 
 .feed {
-  padding: 12px 14px 24px;
+  padding: 8px 14px 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .profile-header {
-  padding: 0 14px 4px;
+  padding: 0 14px 6px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -165,7 +191,7 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 .empty-state {
   text-align: center;
   color: var(--muted);
-  padding: 50px 24px;
+  padding: 56px 24px;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
   font-size: 1.15rem;
@@ -173,7 +199,7 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 
 .card {
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
@@ -190,54 +216,56 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 
 .card-delete {
   position: absolute;
-  top: 10px; right: 10px;
+  top: 12px; right: 12px;
   width: 36px; height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(20, 8, 10, 0.55);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
+  backdrop-filter: blur(2px);
 }
 .card-delete svg { width: 16px; height: 16px; }
 
 .card-overlay {
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  padding: 28px 14px 12px;
-  background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0));
+  padding: 32px 16px 14px;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0));
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   color: #fff;
 }
-.card-author { font-weight: 700; font-size: 0.9rem; }
+.card-author { font-weight: 700; font-size: 0.92rem; letter-spacing: 0.01em; }
 .card-time { font-size: 0.72rem; opacity: 0.85; }
 
 .card-caption {
   margin: 0;
-  padding: 14px 16px 4px;
+  padding: 15px 16px 4px;
   font-size: 0.94rem;
 }
 .card-caption:empty { display: none; }
 
-.card-actions { display: flex; gap: 20px; padding: 10px 16px 14px; }
+.card-actions { display: flex; gap: 22px; padding: 10px 16px 15px; }
 
 .like-btn, .comment-toggle {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 7px;
   border: none; background: none;
   color: var(--muted);
   font-size: 0.86rem; font-weight: 700;
   cursor: pointer;
   padding: 6px 2px;
 }
-.like-btn svg, .comment-toggle svg { width: 21px; height: 21px; }
+.like-btn svg, .comment-toggle svg { width: 21px; height: 21px; transition: transform .15s cubic-bezier(.34,1.56,.64,1); }
+.like-btn:active svg, .comment-toggle:active svg { transform: scale(1.22); }
 .like-btn.liked { color: var(--accent); }
 .like-btn.liked .heart { fill: var(--accent); stroke: var(--accent); }
 
 .card-comments {
   border-top: 1px solid var(--border);
-  padding: 12px 16px 16px;
+  padding: 13px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -319,17 +347,19 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 .fab {
   position: fixed;
   right: 18px;
-  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   width: 58px; height: 58px;
   border-radius: 50%;
   border: none;
   background: var(--accent);
   color: var(--accent-ink);
-  box-shadow: var(--shadow);
+  box-shadow: 0 10px 24px rgba(122, 31, 46, 0.4);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   z-index: 25;
+  transition: transform .12s ease;
 }
+.fab:active { transform: scale(0.92); }
 .fab svg { width: 26px; height: 26px; }
 
 /* ==========================================================================
@@ -348,7 +378,7 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 
 .modal-card {
   background: var(--surface);
-  border-radius: 20px 20px 0 0;
+  border-radius: 22px 22px 0 0;
   padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
   width: 100%;
   max-width: 440px;
@@ -389,10 +419,12 @@ h1 { font-size: 1.4rem; color: var(--accent); }
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  transition: transform .1s ease, opacity .15s ease;
 }
 .btn-primary { background: var(--accent); color: var(--accent-ink); }
 .btn-ghost { background: transparent; color: var(--muted); }
 .btn-danger { background: var(--danger); color: #fff; }
+.btn-primary:active, .btn-ghost:active, .btn-danger:active { transform: scale(0.97); }
 
 .spinner {
   width: 14px; height: 14px;
@@ -405,7 +437,7 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 
 .file-drop {
   border: 1.5px dashed var(--border);
-  border-radius: 14px;
+  border-radius: 16px;
   min-height: 160px;
   display: flex; align-items: center; justify-content: center;
   color: var(--muted);
@@ -460,7 +492,7 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(94px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   background: var(--ink);
   color: #fff;
@@ -477,6 +509,8 @@ h1 { font-size: 1.4rem; color: var(--accent); }
    Desktop layout (≥760px) — sidebar sostituisce top/bottom bar mobile
    ========================================================================== */
 @media (min-width: 760px) {
+  .app-shell { display: flex; }
+
   .mobile-topbar, .mobile-tabbar { display: none; }
 
   .sidebar {
@@ -503,6 +537,7 @@ h1 { font-size: 1.4rem; color: var(--accent); }
 
   .sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
   .nav-item {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -511,14 +546,23 @@ h1 { font-size: 1.4rem; color: var(--accent); }
     color: var(--muted);
     font-size: 0.95rem;
     font-weight: 600;
-    padding: 11px 12px;
+    padding: 11px 12px 11px 18px;
     border-radius: 10px;
     cursor: pointer;
     text-align: left;
+    transition: background .15s ease, color .15s ease;
   }
   .nav-item svg { width: 21px; height: 21px; }
   .nav-item:hover { background: var(--surface-2); }
   .nav-item.active { color: var(--accent); background: var(--surface-2); }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 8px; bottom: 8px;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--accent);
+  }
 
   .sidebar-footer {
     margin-top: auto;
@@ -541,17 +585,19 @@ h1 { font-size: 1.4rem; color: var(--accent); }
     cursor: pointer;
     text-align: left;
     margin-top: 4px;
+    transition: background .15s ease;
   }
   .sidebar-admin-btn:hover { background: var(--surface-2); }
 
-  .main-col { padding-bottom: 40px; }
+  .main-col { flex: 1; min-width: 0; padding-bottom: 40px; }
 
-  .view-topbar { padding: 30px 24px 10px; }
-  h1 { font-size: 1.7rem; }
+  .view-topbar { padding: 34px 28px 12px; align-items: center; }
+  h1 { font-size: 1.75rem; }
+  h1::after { display: none; }
 
   .feed { padding: 16px 0 40px; }
-  .view { padding: 0 24px; }
+  .view { padding: 0 28px; }
 
-  .fab { bottom: 28px; right: 32px; }
+  .fab { bottom: 28px; right: 36px; }
   .toast { bottom: 28px; }
 }
