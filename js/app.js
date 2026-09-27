@@ -131,12 +131,13 @@ function openNameModal() {
 }
 
 function applyLogin(guestId, name) {
-  state.guestId = guestId;
-  state.guestName = name;
-  localStorage.setItem('melagram_guest_id', state.guestId);
-  localStorage.setItem('melagram_guest_name', state.guestName);
-  updateGuestLabels();
-  els.modalName.hidden = true;
+  // Ricarica subito la pagina invece di aggiornare lo stato "a caldo":
+  // cambiando identità cambiano anche i like già messi, le foto del
+  // profilo, ecc. Un reload pulito evita che restino in giro dati
+  // dell'utente precedente finché non si tocca qualcos'altro.
+  localStorage.setItem('melagram_guest_id', guestId);
+  localStorage.setItem('melagram_guest_name', name);
+  window.location.reload();
 }
 
 els.inputName.addEventListener('input', () => {
