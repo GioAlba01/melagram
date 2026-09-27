@@ -7,42 +7,89 @@
 <meta name="description" content="Condividi le foto della giornata di Luca &amp; Mela">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="app-shell">
 
-  <!-- Header -->
-  <header class="topbar">
-    <div class="brand">
+  <!-- ============ Sidebar (desktop) ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
       <span class="brand-mark">Melagram</span>
       <span class="brand-sub">Luca &amp; Mela</span>
     </div>
-    <div class="topbar-actions">
-      <button id="btnSlideshow" class="icon-btn admin-only" title="Modalità schermo" hidden>
-        <svg viewBox="0 0 24 24"><path d="M4 5h16v11H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 20h6M12 16v4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+    <nav class="sidebar-nav">
+      <button class="nav-item js-nav active" data-view="home">
+        <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Home</span>
       </button>
-      <button id="btnExport" class="icon-btn admin-only" title="Esporta tutte le foto" hidden>
-        <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+      <button class="nav-item js-nav" data-view="profile">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 20c1.3-4 4.3-6 7.5-6s6.2 2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span>Profilo</span>
       </button>
-      <button id="btnAdmin" class="icon-btn" title="Area amministratore">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <p class="guest-chip">Stai postando come <strong id="guestNameLabel">…</strong></p>
+      <button class="link-btn js-change-name">Cambia nome</button>
+      <button class="sidebar-admin-btn js-admin-open">Area amministratore</button>
     </div>
+  </aside>
+
+  <!-- ============ Mobile top bar ============ -->
+  <header class="mobile-topbar">
+    <span class="brand-mark-sm">Melagram</span>
+    <button class="icon-btn js-admin-open" title="Area amministratore">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
   </header>
 
-  <!-- Guest bar -->
-  <div class="guestbar">
-    <span>Stai postando come <strong id="guestNameLabel">…</strong></span>
-    <button id="btnChangeName" class="link-btn">cambia</button>
-  </div>
-
-  <!-- Feed -->
-  <main id="feed" class="feed" aria-live="polite">
-    <div id="feedEmpty" class="empty-state" hidden>
-      <p>Ancora nessuna foto. Sii il primo a condividere un momento della giornata.</p>
+  <!-- ============ Main column ============ -->
+  <main class="main-col">
+    <div class="view-topbar">
+      <h1 id="viewTitle">Home</h1>
+      <div class="view-actions">
+        <button id="btnSlideshow" class="icon-btn admin-only" title="Modalità schermo" hidden>
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v11H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 20h6M12 16v4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+        </button>
+        <button id="btnExport" class="icon-btn admin-only" title="Esporta tutte le foto" hidden>
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+        </button>
+      </div>
     </div>
+
+    <!-- Home view -->
+    <section id="viewHome" class="view">
+      <div id="feedHome" class="feed"></div>
+      <div id="emptyHome" class="empty-state" hidden>
+        <p>Ancora nessuna foto. Sii il primo a condividere un momento della giornata.</p>
+      </div>
+    </section>
+
+    <!-- Profile view -->
+    <section id="viewProfile" class="view" hidden>
+      <div class="profile-header">
+        <p>Le foto che pubblichi con il nome <strong id="guestNameLabel2">…</strong> compaiono qui e nella Home.</p>
+        <button class="link-btn js-change-name">Cambia nome</button>
+      </div>
+      <div id="feedProfile" class="feed"></div>
+      <div id="emptyProfile" class="empty-state" hidden>
+        <p>Non hai ancora pubblicato foto. Tocca il pulsante <strong>+</strong> per iniziare.</p>
+      </div>
+    </section>
   </main>
+
+  <!-- ============ Mobile bottom tab bar ============ -->
+  <nav class="mobile-tabbar">
+    <button class="tab-item js-nav active" data-view="home">
+      <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="tab-item js-nav" data-view="profile">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 20c1.3-4 4.3-6 7.5-6s6.2 2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span>Profilo</span>
+    </button>
+  </nav>
 
   <!-- Floating action button -->
   <button id="fab" class="fab" title="Aggiungi una foto">
@@ -97,7 +144,7 @@
         </div>
       </div>
       <div id="adminLoggedInPanel" hidden>
-        <p class="modal-sub">Sei connesso come amministratore. Puoi eliminare foto e commenti, aprire la modalità schermo ed esportare l'archivio.</p>
+        <p class="modal-sub">Sei connesso come amministratore. Puoi modificare o eliminare foto e commenti, aprire la modalità schermo ed esportare l'archivio.</p>
         <div class="modal-actions">
           <button id="btnCloseAdminPanel" class="btn-ghost">Chiudi</button>
           <button id="btnLogout" class="btn-danger">Esci</button>
@@ -128,8 +175,18 @@
       <div class="comment-body">
         <strong class="comment-author"></strong>
         <span class="comment-text"></span>
+        <div class="comment-edit-box" hidden>
+          <input class="comment-edit-input" type="text" maxlength="300">
+          <button class="comment-edit-save">Salva</button>
+          <button class="comment-edit-cancel">Annulla</button>
+        </div>
       </div>
-      <button class="comment-delete admin-only" title="Elimina commento" hidden>✕</button>
+      <div class="comment-admin-actions admin-only" hidden>
+        <button class="comment-edit-btn" title="Modifica commento">
+          <svg viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a1.5 1.5 0 0 0 0-2.1l-1.9-1.9a1.5 1.5 0 0 0-2.1 0L4 16v4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="comment-delete" title="Elimina commento">✕</button>
+      </div>
     </div>
   </template>
 
@@ -167,8 +224,10 @@
     </article>
   </template>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="js/app.js"></script>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

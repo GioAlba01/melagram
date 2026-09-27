@@ -14,6 +14,7 @@ const state = {
   guestId: null,
   guestName: null,
   isAdmin: false,
+  activeView: 'home', // 'home' | 'profile'
   posts: new Map(),   // id -> { data, likeCount, commentCount, likedByMe, commentsLoaded, cardEl }
   order: [],          // id in ordine di creazione decrescente
 };
@@ -43,12 +44,6 @@ function timeAgo(iso) {
   return Math.floor(diff / 86400) + ' g fa';
 }
 
-function escapeHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
 function toast(msg, ms = 2600) {
   els.toast.textContent = msg;
   els.toast.hidden = false;
@@ -58,6 +53,7 @@ function toast(msg, ms = 2600) {
 
 function setAdminUI(isAdmin) {
   state.isAdmin = isAdmin;
+  document.body.classList.toggle('is-admin', isAdmin);
   document.querySelectorAll('.admin-only').forEach(el => { el.hidden = !isAdmin; });
 }
 
@@ -77,8 +73,14 @@ function loadIdentity() {
     localStorage.setItem('melagram_guest_id', state.guestId);
   }
   state.guestName = localStorage.getItem('melagram_guest_name');
-  els.guestNameLabel.textContent = state.guestName || '…';
+  updateGuestLabels();
   if (!state.guestName) openNameModal();
+}
+
+function updateGuestLabels() {
+  const label = state.guestName || '…';
+  if (els.guestNameLabel) els.guestNameLabel.textContent = label;
+  if (els.guestNameLabel2) els.guestNameLabel2.textContent = label;
 }
 
 function openNameModal() {
@@ -97,7 +99,7 @@ els.btnSaveName.addEventListener('click', () => {
   }
   state.guestName = name.slice(0, 40);
   localStorage.setItem('melagram_guest_name', state.guestName);
-  els.guestNameLabel.textContent = state.guestName;
+  updateGuestLabels();
   els.modalName.hidden = true;
 });
 
@@ -105,11 +107,50 @@ els.inputName.addEventListener('keydown', e => {
   if (e.key === 'Enter') els.btnSaveName.click();
 });
 
-els.btnChangeName.addEventListener('click', openNameModal);
+document.querySelectorAll('.js-change-name').forEach(btn => {
+  btn.addEventListener('click', openNameModal);
+});
 
 function requireName() {
   if (!state.guestName) { openNameModal(); return false; }
   return true;
+}
+
+// ============================================================================
+// Navigazione tra viste (Home / Profilo)
+// ============================================================================
+function switchView(view) {
+  state.activeView = view;
+
+  document.querySelectorAll('.js-nav').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === view);
+  });
+
+  els.viewHome.hidden = view !== 'home';
+  els.viewProfile.hidden = view !== 'profile';
+  els.viewTitle.textContent = view === 'home' ? 'Home' : 'Il tuo profilo';
+
+  reflowActiveView();
+}
+
+document.querySelectorAll('.js-nav').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+function reflowActiveView() {
+  const container = state.activeView === 'home' ? els.feedHome : els.feedProfile;
+  const emptyEl = state.activeView === 'home' ? els.emptyHome : els.emptyProfile;
+
+  const ids = state.activeView === 'home'
+    ? state.order
+    : state.order.filter(id => state.posts.get(id)?.data.guest_id === state.guestId);
+
+  container.innerHTML = '';
+  for (const id of ids) {
+    const entry = state.posts.get(id);
+    if (entry?.cardEl) container.appendChild(entry.cardEl);
+  }
+  emptyEl.hidden = ids.length > 0;
 }
 
 // ============================================================================
@@ -118,7 +159,7 @@ function requireName() {
 async function loadFeed() {
   const { data: posts, error } = await sb
     .from('posts')
-    .select('id, author_name, image_url, caption, created_at, likes(count), comments(count)')
+    .select('id, guest_id, author_name, image_url, caption, created_at, likes(count), comments(count)')
     .order('created_at', { ascending: false })
     .limit(300);
 
@@ -133,18 +174,17 @@ async function loadFeed() {
     .eq('guest_id', state.guestId);
   const likedSet = new Set((myLikes || []).map(l => l.post_id));
 
-  els.feedEmpty.hidden = posts.length > 0;
-
   for (const p of posts) {
     addPostToState(p, {
       likeCount: p.likes?.[0]?.count || 0,
       commentCount: p.comments?.[0]?.count || 0,
       likedByMe: likedSet.has(p.id),
-    }, { prepend: false });
+    });
   }
+  reflowActiveView();
 }
 
-function addPostToState(post, counts, { prepend }) {
+function addPostToState(post, counts) {
   if (state.posts.has(post.id)) return;
   const entry = {
     data: post,
@@ -155,16 +195,11 @@ function addPostToState(post, counts, { prepend }) {
     cardEl: null,
   };
   state.posts.set(post.id, entry);
-  const card = renderCard(post.id, entry);
-  entry.cardEl = card;
-  if (prepend) {
-    els.feed.insertBefore(card, els.feed.firstChild === els.feedEmpty ? els.feedEmpty.nextSibling : els.feed.firstChild);
-    state.order.unshift(post.id);
-  } else {
-    els.feed.appendChild(card);
-    state.order.push(post.id);
-  }
-  els.feedEmpty.hidden = state.order.length > 0;
+  entry.cardEl = renderCard(post.id, entry);
+  state.order.unshift(post.id);
+  state.order = [...new Set(state.order)]; // sicurezza
+  // riordina per data se necessario
+  state.order.sort((a, b) => new Date(state.posts.get(b).data.created_at) - new Date(state.posts.get(a).data.created_at));
 }
 
 function removePostFromState(postId) {
@@ -173,7 +208,7 @@ function removePostFromState(postId) {
   entry.cardEl?.remove();
   state.posts.delete(postId);
   state.order = state.order.filter(id => id !== postId);
-  els.feedEmpty.hidden = state.order.length > 0;
+  reflowActiveView();
 }
 
 // ============================================================================
@@ -266,7 +301,7 @@ async function toggleComments(postId, panelEl) {
 
   const { data, error } = await sb
     .from('comments')
-    .select('id, author_name, text, created_at')
+    .select('id, post_id, author_name, text, created_at')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
@@ -281,11 +316,46 @@ async function toggleComments(postId, panelEl) {
 function renderComment(c) {
   const node = tplComment.content.firstElementChild.cloneNode(true);
   node.dataset.commentId = c.id;
+  node.dataset.postId = c.post_id;
+
+  const textEl = node.querySelector('.comment-text');
+  textEl.textContent = c.text;
   node.querySelector('.comment-author').textContent = c.author_name + ':';
-  node.querySelector('.comment-text').textContent = c.text;
+
+  const editBox = node.querySelector('.comment-edit-box');
+  const editInput = node.querySelector('.comment-edit-input');
+
+  const adminActions = node.querySelector('.comment-admin-actions');
+  adminActions.hidden = !state.isAdmin;
+
+  const editBtn = node.querySelector('.comment-edit-btn');
+  editBtn.hidden = !state.isAdmin;
+  editBtn.addEventListener('click', () => {
+    editInput.value = textEl.textContent;
+    textEl.hidden = true;
+    editBox.hidden = false;
+    editInput.focus();
+  });
+
+  node.querySelector('.comment-edit-cancel').addEventListener('click', () => {
+    editBox.hidden = true;
+    textEl.hidden = false;
+  });
+
+  node.querySelector('.comment-edit-save').addEventListener('click', async () => {
+    const newText = editInput.value.trim();
+    if (!newText) return;
+    const { error } = await sb.from('comments').update({ text: newText }).eq('id', c.id);
+    if (error) { toast('Impossibile salvare la modifica.'); return; }
+    textEl.textContent = newText;
+    editBox.hidden = true;
+    textEl.hidden = false;
+  });
+
   const delBtn = node.querySelector('.comment-delete');
   delBtn.hidden = !state.isAdmin;
-  delBtn.addEventListener('click', () => deleteComment(c.id, c.post_id));
+  delBtn.addEventListener('click', () => deleteComment(c.id));
+
   return node;
 }
 
@@ -302,9 +372,12 @@ async function submitComment(postId, inputEl) {
   if (error) toast('Impossibile inviare il commento.');
 }
 
-async function deleteComment(commentId, postId) {
-  const { error } = await sb.from('comments').delete().eq('id', commentId);
-  if (error) toast('Impossibile eliminare il commento.');
+async function deleteComment(commentId) {
+  const { data, error } = await sb.from('comments').delete().eq('id', commentId).select('id');
+  if (error) { toast('Errore: ' + error.message); return; }
+  if (!data || data.length === 0) {
+    toast('Eliminazione bloccata: non risulti connesso come amministratore su questo dispositivo.');
+  }
 }
 
 // ============================================================================
@@ -359,6 +432,7 @@ els.btnSubmitUpload.addEventListener('click', async () => {
     const imageUrl = pub.publicUrl;
 
     const { error: insErr } = await sb.from('posts').insert({
+      guest_id: state.guestId,
       author_name: state.guestName,
       image_url: imageUrl,
       caption: els.inputCaption.value.trim().slice(0, 240),
@@ -381,26 +455,32 @@ async function deletePost(postId) {
   const entry = state.posts.get(postId);
   if (!entry) return;
   const path = pathFromPublicUrl(entry.data.image_url);
-  const { error } = await sb.from('posts').delete().eq('id', postId);
-  if (error) { toast('Impossibile eliminare la foto.'); return; }
+  const { data, error } = await sb.from('posts').delete().eq('id', postId).select('id');
+  if (error) { toast('Errore: ' + error.message); return; }
+  if (!data || data.length === 0) {
+    toast('Eliminazione bloccata: non risulti connesso come amministratore su questo dispositivo.');
+    return;
+  }
   if (path) await sb.storage.from(BUCKET).remove([path]);
 }
 
 // ============================================================================
 // Admin
 // ============================================================================
-els.btnAdmin.addEventListener('click', () => {
-  els.adminError.hidden = true;
-  if (state.isAdmin) {
-    els.adminLoginForm.hidden = true;
-    els.adminLoggedInPanel.hidden = false;
-  } else {
-    els.adminLoginForm.hidden = false;
-    els.adminLoggedInPanel.hidden = true;
-    els.inputAdminEmail.value = '';
-    els.inputAdminPassword.value = '';
-  }
-  els.modalAdmin.hidden = false;
+document.querySelectorAll('.js-admin-open').forEach(btn => {
+  btn.addEventListener('click', () => {
+    els.adminError.hidden = true;
+    if (state.isAdmin) {
+      els.adminLoginForm.hidden = true;
+      els.adminLoggedInPanel.hidden = false;
+    } else {
+      els.adminLoginForm.hidden = false;
+      els.adminLoggedInPanel.hidden = true;
+      els.inputAdminEmail.value = '';
+      els.inputAdminPassword.value = '';
+    }
+    els.modalAdmin.hidden = false;
+  });
 });
 
 els.btnCancelAdmin.addEventListener('click', () => { els.modalAdmin.hidden = true; });
@@ -432,12 +512,13 @@ els.btnLogout.addEventListener('click', async () => {
 
 sb.auth.onAuthStateChange((_event, session) => {
   setAdminUI(!!session);
-  refreshAllCommentDeleteButtons();
+  refreshAllAdminButtons();
 });
 
-function refreshAllCommentDeleteButtons() {
+function refreshAllAdminButtons() {
   document.querySelectorAll('.card-delete').forEach(b => { b.hidden = !state.isAdmin; });
-  document.querySelectorAll('.comment-delete').forEach(b => { b.hidden = !state.isAdmin; });
+  document.querySelectorAll('.comment-admin-actions').forEach(b => { b.hidden = !state.isAdmin; });
+  document.querySelectorAll('.comment-edit-btn, .comment-delete').forEach(b => { b.hidden = !state.isAdmin; });
 }
 
 // ============================================================================
@@ -517,7 +598,8 @@ function subscribeRealtime() {
   sb.channel('melagram-live')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
       if (state.posts.has(payload.new.id)) return;
-      addPostToState(payload.new, { likeCount: 0, commentCount: 0, likedByMe: false }, { prepend: true });
+      addPostToState(payload.new, { likeCount: 0, commentCount: 0, likedByMe: false });
+      reflowActiveView();
     })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, payload => {
       removePostFromState(payload.old.id);
@@ -525,15 +607,15 @@ function subscribeRealtime() {
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'likes' }, payload => {
       const entry = state.posts.get(payload.new.post_id);
       if (!entry) return;
+      if (payload.new.guest_id === state.guestId) return;
       entry.likeCount++;
-      if (payload.new.guest_id === state.guestId) entry.likedByMe = true;
       updateCardLike(payload.new.post_id);
     })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'likes' }, payload => {
       const entry = state.posts.get(payload.old.post_id);
       if (!entry) return;
+      if (payload.old.guest_id === state.guestId) return;
       entry.likeCount = Math.max(0, entry.likeCount - 1);
-      if (payload.old.guest_id === state.guestId) entry.likedByMe = false;
       updateCardLike(payload.old.post_id);
     })
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, payload => {
@@ -547,6 +629,12 @@ function subscribeRealtime() {
       } else if (entry.commentsLoaded) {
         entry.commentsLoaded = false; // ricarica alla prossima apertura
       }
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'comments' }, payload => {
+      const entry = state.posts.get(payload.new.post_id);
+      if (!entry?.cardEl) return;
+      const row = entry.cardEl.querySelector(`.comment-row[data-comment-id="${payload.new.id}"]`);
+      if (row) row.querySelector('.comment-text').textContent = payload.new.text;
     })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comments' }, payload => {
       const entry = state.posts.get(payload.old.post_id);
