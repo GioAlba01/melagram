@@ -406,6 +406,80 @@ h1::after {
 }
 
 /* ==========================================================================
+   News — messaggi di testo pubblici, stile bacheca/Twitter
+   ========================================================================== */
+.news-compose {
+  margin: 0 14px 18px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.news-textarea {
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  resize: none;
+  padding: 0;
+  min-height: 44px;
+}
+.news-textarea:focus { outline: none; }
+.news-send-btn { align-self: flex-end; }
+
+.news-feed {
+  padding: 0 14px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.news-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 40px 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.news-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.news-author {
+  color: var(--accent);
+  font-size: 0.92rem;
+}
+.news-time { color: var(--muted); font-size: 0.75rem; }
+.news-text {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.45;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.news-delete {
+  position: absolute;
+  top: 12px; right: 12px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+}
+.news-delete svg { width: 15px; height: 15px; }
+
+/* ==========================================================================
    FAB — sopra la tab bar mobile
    ========================================================================== */
 .fab {
@@ -739,6 +813,9 @@ h1::after {
 
   .feed { padding: 16px 0 40px; }
   .view { padding: 0 28px; }
+
+  .news-compose { margin: 0 0 18px; }
+  .news-feed { padding: 0 0 40px; }
 
   .fab { bottom: 28px; right: 36px; }
   .toast { bottom: 28px; }

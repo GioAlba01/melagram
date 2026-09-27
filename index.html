@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 <div class="app-shell">
@@ -37,6 +37,10 @@
       <button class="nav-item js-nav active" data-view="home">
         <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Home</span>
+      </button>
+      <button class="nav-item js-nav" data-view="news">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v10a1 1 0 0 1-1 1H9.5L5 20v-4a1 1 0 0 1-1-1V5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        <span>News</span>
       </button>
       <button class="nav-item js-nav" data-view="profile">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 20c1.3-4 4.3-6 7.5-6s6.2 2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -66,6 +70,18 @@
       <div id="feedHome" class="feed"></div>
       <div id="emptyHome" class="empty-state" hidden>
         <p>Ancora nessuna foto. Sii il primo a condividere un momento della giornata.</p>
+      </div>
+    </section>
+
+    <!-- News view -->
+    <section id="viewNews" class="view" hidden>
+      <div class="news-compose">
+        <textarea id="inputNews" class="news-textarea" placeholder="Scrivi un pensiero, un augurio, una battuta... lo vedranno tutti" maxlength="280" rows="2"></textarea>
+        <button id="btnSendNews" class="btn-primary news-send-btn">Pubblica</button>
+      </div>
+      <div id="feedNews" class="news-feed"></div>
+      <div id="emptyNews" class="empty-state" hidden>
+        <p>Ancora nessun messaggio. Scrivi il primo!</p>
       </div>
     </section>
 
@@ -102,6 +118,10 @@
     <button class="tab-item js-nav active" data-view="home">
       <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Home</span>
+    </button>
+    <button class="tab-item js-nav" data-view="news">
+      <svg viewBox="0 0 24 24"><path d="M4 5h16v10a1 1 0 0 1-1 1H9.5L5 20v-4a1 1 0 0 1-1-1V5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      <span>News</span>
     </button>
     <button class="tab-item js-nav" data-view="profile">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 20c1.3-4 4.3-6 7.5-6s6.2 2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -228,6 +248,20 @@
     </div>
   </template>
 
+  <!-- news post template -->
+  <template id="tplNews">
+    <article class="news-card">
+      <button class="news-delete admin-only" title="Elimina messaggio" hidden>
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="news-head">
+        <strong class="news-author"></strong>
+        <span class="news-time"></span>
+      </div>
+      <p class="news-text"></p>
+    </article>
+  </template>
+
   <!-- post card template -->
   <template id="tplPost">
     <article class="card">
@@ -266,7 +300,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="js/app.js?v=7"></script>
+<script src="js/app.js?v=8"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

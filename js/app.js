@@ -127,8 +127,9 @@ function switchView(view) {
   });
 
   els.viewHome.hidden = view !== 'home';
+  els.viewNews.hidden = view !== 'news';
   els.viewProfile.hidden = view !== 'profile';
-  els.viewTopbar.hidden = view === 'home';
+  els.viewTopbar.hidden = view !== 'profile';
   els.viewTitle.textContent = 'Il tuo profilo';
 
   reflowActiveView();
@@ -139,6 +140,7 @@ document.querySelectorAll('.js-nav').forEach(btn => {
 });
 
 function reflowActiveView() {
+  if (state.activeView === 'news') return; // il feed News si gestisce da sé (vedi reflowNews)
   const container = state.activeView === 'home' ? els.feedHome : els.feedProfile;
   const emptyEl = state.activeView === 'home' ? els.emptyHome : els.emptyProfile;
 
@@ -518,6 +520,94 @@ async function deletePost(postId) {
 }
 
 // ============================================================================
+// News — messaggi di testo pubblici, senza foto e senza archivio personale
+// ============================================================================
+const tplNews = document.getElementById('tplNews');
+const newsState = {
+  order: [],        // id in ordine di creazione decrescente
+  items: new Map(),  // id -> { data, cardEl }
+};
+
+async function loadNews() {
+  const { data, error } = await sb
+    .from('news')
+    .select('id, guest_id, author_name, text, created_at')
+    .order('created_at', { ascending: false })
+    .limit(300);
+
+  if (error) {
+    toast('Impossibile caricare i messaggi: ' + error.message);
+    return;
+  }
+  for (const n of data) addNewsToState(n);
+  reflowNews();
+}
+
+function addNewsToState(item) {
+  if (newsState.items.has(item.id)) return;
+  const cardEl = renderNewsCard(item);
+  newsState.items.set(item.id, { data: item, cardEl });
+  newsState.order.push(item.id);
+  newsState.order.sort((a, b) => new Date(newsState.items.get(b).data.created_at) - new Date(newsState.items.get(a).data.created_at));
+}
+
+function removeNewsFromState(id) {
+  if (!newsState.items.has(id)) return;
+  newsState.items.delete(id);
+  newsState.order = newsState.order.filter(x => x !== id);
+  reflowNews();
+}
+
+function reflowNews() {
+  els.feedNews.innerHTML = '';
+  for (const id of newsState.order) {
+    const entry = newsState.items.get(id);
+    if (entry?.cardEl) els.feedNews.appendChild(entry.cardEl);
+  }
+  els.emptyNews.hidden = newsState.order.length > 0;
+}
+
+function renderNewsCard(item) {
+  const node = tplNews.content.firstElementChild.cloneNode(true);
+  node.dataset.newsId = item.id;
+  node.querySelector('.news-author').textContent = item.author_name;
+  node.querySelector('.news-time').textContent = timeAgo(item.created_at);
+  node.querySelector('.news-text').textContent = item.text;
+
+  const delBtn = node.querySelector('.news-delete');
+  delBtn.hidden = !state.isAdmin;
+  delBtn.addEventListener('click', () => deleteNews(item.id));
+
+  return node;
+}
+
+async function submitNews() {
+  if (!requireName()) return;
+  const text = els.inputNews.value.trim();
+  if (!text) return;
+  els.inputNews.value = '';
+  els.btnSendNews.disabled = true;
+  const { error } = await sb.from('news').insert({
+    guest_id: state.guestId, author_name: state.guestName, text,
+  });
+  els.btnSendNews.disabled = false;
+  if (error) toast('Impossibile pubblicare il messaggio.');
+}
+
+els.btnSendNews.addEventListener('click', submitNews);
+els.inputNews.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitNews(); }
+});
+
+async function deleteNews(id) {
+  const { data, error } = await sb.from('news').delete().eq('id', id).select('id');
+  if (error) { toast('Errore: ' + error.message); return; }
+  if (!data || data.length === 0) {
+    toast('Eliminazione bloccata: non risulti connesso come amministratore su questo dispositivo.');
+  }
+}
+
+// ============================================================================
 // Admin
 // ============================================================================
 document.querySelectorAll('.js-admin-open').forEach(btn => {
@@ -572,6 +662,7 @@ function refreshAllAdminButtons() {
   document.querySelectorAll('.card-delete').forEach(b => { b.hidden = !state.isAdmin; });
   document.querySelectorAll('.comment-admin-actions').forEach(b => { b.hidden = !state.isAdmin; });
   document.querySelectorAll('.comment-edit-btn, .comment-delete').forEach(b => { b.hidden = !state.isAdmin; });
+  document.querySelectorAll('.news-delete').forEach(b => { b.hidden = !state.isAdmin; });
 }
 
 // ============================================================================
@@ -697,6 +788,13 @@ function subscribeRealtime() {
       const row = entry.cardEl?.querySelector(`.comment-row[data-comment-id="${payload.old.id}"]`);
       row?.remove();
     })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'news' }, payload => {
+      addNewsToState(payload.new);
+      reflowNews();
+    })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'news' }, payload => {
+      removeNewsFromState(payload.old.id);
+    })
     .subscribe();
 }
 
@@ -767,5 +865,6 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
   const { data: { session } } = await sb.auth.getSession();
   setAdminUI(!!session);
   await loadFeed();
+  await loadNews();
   subscribeRealtime();
 })();
