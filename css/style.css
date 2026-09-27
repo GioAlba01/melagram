@@ -37,27 +37,14 @@ body {
 img { max-width: 100%; }
 [hidden] { display: none !important; }
 
-h1, h2 {
+h2 {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
   font-weight: 600;
   margin: 0;
   text-wrap: balance;
-}
-h2 { font-size: 1.55rem; margin-bottom: 4px; }
-
-h1 {
-  font-size: 1.45rem;
-  color: var(--ink);
-}
-h1::after {
-  content: '';
-  display: block;
-  width: 34px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--accent);
-  margin-top: 7px;
+  font-size: 1.55rem;
+  margin-bottom: 4px;
 }
 
 /* ==========================================================================
@@ -167,19 +154,6 @@ h1::after {
 }
 
 /* ==========================================================================
-   View topbar (titolo pagina + azioni admin)
-   ========================================================================== */
-.view-topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 22px 18px 10px;
-  max-width: 640px;
-  margin: 0 auto;
-}
-.view-actions { display: flex; gap: 8px; margin-top: 2px; }
-
-/* ==========================================================================
    Feed
    ========================================================================== */
 .view { max-width: 640px; margin: 0 auto; }
@@ -192,14 +166,40 @@ h1::after {
 }
 
 .profile-header {
-  padding: 0 14px 6px;
+  padding: 22px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  color: var(--muted);
-  font-size: 0.88rem;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
 }
-.profile-header strong { color: var(--ink); }
+.profile-name {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.6rem;
+}
+.profile-name strong { color: var(--ink); font-weight: 600; }
+
+/* ---- Griglia foto del profilo, in piccolo come Instagram ---- */
+#feedProfile.feed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  padding: 4px 3px 24px;
+}
+#feedProfile .card {
+  border-radius: 3px;
+  box-shadow: none;
+  border: none;
+}
+#feedProfile .card-media { aspect-ratio: 1 / 1; }
+#feedProfile .card-overlay,
+#feedProfile .card-caption,
+#feedProfile .card-actions,
+#feedProfile .card-comments { display: none; }
+#feedProfile .card-delete { width: 26px; height: 26px; top: 5px; right: 5px; }
+#feedProfile .card-delete svg { width: 13px; height: 13px; }
 
 .empty-state {
   text-align: center;
@@ -807,12 +807,10 @@ h1::after {
 
   .main-col { flex: 1; min-width: 0; padding-bottom: 40px; }
 
-  .view-topbar { padding: 34px 28px 12px; align-items: center; }
-  h1 { font-size: 1.75rem; }
-  h1::after { display: none; }
-
   .feed { padding: 16px 0 40px; }
   .view { padding: 0 28px; }
+
+  #feedProfile.feed { grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 16px 0 40px; }
 
   .news-compose { margin: 0 0 18px; }
   .news-feed { padding: 0 0 40px; }

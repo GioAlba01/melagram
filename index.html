@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
 <div class="app-shell">
@@ -61,9 +61,6 @@
 
   <!-- ============ Main column ============ -->
   <main class="main-col">
-    <div class="view-topbar" id="viewTopbar" hidden>
-      <h1 id="viewTitle">Home</h1>
-    </div>
 
     <!-- Home view -->
     <section id="viewHome" class="view">
@@ -88,7 +85,7 @@
     <!-- Profile view -->
     <section id="viewProfile" class="view" hidden>
       <div class="profile-header">
-        <p>Le foto che pubblichi con il nome <strong id="guestNameLabel2">…</strong> compaiono qui e nella Home.</p>
+        <p class="profile-name"><strong id="guestNameLabel2">…</strong></p>
         <button class="link-btn js-change-name">Cambia nome</button>
       </div>
       <div id="feedProfile" class="feed"></div>
@@ -96,7 +93,7 @@
         <p>Non hai ancora pubblicato foto. Tocca il pulsante <strong>+</strong> per iniziare.</p>
       </div>
 
-      <div class="admin-zone">
+      <div class="admin-zone" id="adminZone" hidden>
         <button class="admin-link js-admin-open">Area amministratore</button>
         <div class="admin-tools admin-only" hidden>
           <p class="admin-tools-title">Strumenti amministratore</p>
@@ -115,13 +112,13 @@
 
   <!-- ============ Mobile bottom tab bar ============ -->
   <nav class="mobile-tabbar">
-    <button class="tab-item js-nav active" data-view="home">
-      <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Home</span>
-    </button>
     <button class="tab-item js-nav" data-view="news">
       <svg viewBox="0 0 24 24"><path d="M4 5h16v10a1 1 0 0 1-1 1H9.5L5 20v-4a1 1 0 0 1-1-1V5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg>
       <span>News</span>
+    </button>
+    <button class="tab-item js-nav active" data-view="home">
+      <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Home</span>
     </button>
     <button class="tab-item js-nav" data-view="profile">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 20c1.3-4 4.3-6 7.5-6s6.2 2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -300,7 +297,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/app.js?v=9"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

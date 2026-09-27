@@ -81,6 +81,17 @@ function updateGuestLabels() {
   const label = state.guestName || '…';
   if (els.guestNameLabel) els.guestNameLabel.textContent = label;
   if (els.guestNameLabel2) els.guestNameLabel2.textContent = label;
+  refreshAdminZoneVisibility();
+}
+
+// La sezione "Area amministratore" nel Profilo si vede solo a chi si è
+// dato il nome segreto "Charge" (nessuna vera protezione: è solo per
+// non mostrarla per sbaglio agli altri invitati; il vero accesso resta
+// protetto dall'accesso Supabase con email e password).
+function refreshAdminZoneVisibility() {
+  if (!els.adminZone) return;
+  const isTrigger = (state.guestName || '').trim().toLowerCase() === 'charge';
+  els.adminZone.hidden = !isTrigger;
 }
 
 function openNameModal() {
@@ -90,14 +101,62 @@ function openNameModal() {
   setTimeout(() => els.inputName.focus(), 50);
 }
 
-els.btnSaveName.addEventListener('click', () => {
+els.btnSaveName.addEventListener('click', async () => {
   const name = els.inputName.value.trim();
   if (!name) {
     els.nameError.textContent = 'Inserisci il tuo nome.';
     els.nameError.hidden = false;
     return;
   }
-  state.guestName = name.slice(0, 40);
+  const finalName = name.slice(0, 40);
+  els.nameError.hidden = true;
+
+  // Se il nome non cambia rispetto a quello già salvato, non serve
+  // ricontrollare nulla nel database.
+  if (finalName === state.guestName) {
+    els.modalName.hidden = true;
+    return;
+  }
+
+  els.btnSaveName.disabled = true;
+
+  // Controlla se qualcun altro ha già preso questo nome (senza distinzione
+  // tra maiuscole/minuscole), così ogni invitato ha un nome unico.
+  const escapedName = finalName.replace(/[%_]/g, m => '\\' + m);
+  const { data: existing, error: checkError } = await sb
+    .from('guests')
+    .select('guest_id')
+    .ilike('name', escapedName)
+    .maybeSingle();
+
+  if (checkError) {
+    els.btnSaveName.disabled = false;
+    els.nameError.textContent = 'Errore di connessione, riprova.';
+    els.nameError.hidden = false;
+    return;
+  }
+
+  if (existing && existing.guest_id !== state.guestId) {
+    els.btnSaveName.disabled = false;
+    els.nameError.textContent = 'Questo nome è già stato scelto da un altro invitato. Provane un altro.';
+    els.nameError.hidden = false;
+    return;
+  }
+
+  // Registra (o aggiorna) il nome legato a questo dispositivo.
+  const { error: saveError } = await sb
+    .from('guests')
+    .upsert({ guest_id: state.guestId, name: finalName }, { onConflict: 'guest_id' });
+
+  els.btnSaveName.disabled = false;
+
+  if (saveError) {
+    els.nameError.textContent = 'Questo nome è già stato scelto da un altro invitato. Provane un altro.';
+    els.nameError.hidden = false;
+    return;
+  }
+
+  state.guestName = finalName;
   localStorage.setItem('melagram_guest_name', state.guestName);
   updateGuestLabels();
   els.modalName.hidden = true;
@@ -129,8 +188,6 @@ function switchView(view) {
   els.viewHome.hidden = view !== 'home';
   els.viewNews.hidden = view !== 'news';
   els.viewProfile.hidden = view !== 'profile';
-  els.viewTopbar.hidden = view !== 'profile';
-  els.viewTitle.textContent = 'Il tuo profilo';
 
   reflowActiveView();
 }
