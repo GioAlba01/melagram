@@ -486,18 +486,50 @@ h1::after {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.file-drop {
+.upload-choice {
+  display: flex;
+  gap: 10px;
+}
+.upload-choice-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: 1.5px dashed var(--border);
   border-radius: 16px;
-  min-height: 160px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--muted);
-  font-size: 0.9rem;
-  cursor: pointer;
-  overflow: hidden;
+  padding: 22px 10px;
   background: var(--surface-2);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: background .15s ease;
 }
-.file-drop img { width: 100%; height: 220px; object-fit: cover; }
+.upload-choice-btn svg { width: 26px; height: 26px; color: var(--accent); }
+.upload-choice-btn:active { background: var(--border); }
+
+.file-preview-wrap {
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+.file-preview-wrap img { width: 100%; height: 240px; object-fit: cover; display: block; }
+.clear-file-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 14px;
+  background: rgba(20, 8, 10, 0.6);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
 
 /* ==========================================================================
    Slideshow

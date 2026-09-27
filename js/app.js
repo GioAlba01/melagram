@@ -385,28 +385,36 @@ async function deleteComment(commentId) {
 // ============================================================================
 let pendingFile = null;
 
-els.fab.addEventListener('click', () => {
-  if (!requireName()) return;
+function resetUploadModal() {
   pendingFile = null;
-  els.inputFile.value = '';
-  els.filePreview.hidden = true;
-  els.fileDropLabel.hidden = false;
+  els.inputFileCamera.value = '';
+  els.inputFileGallery.value = '';
+  els.uploadChoice.hidden = false;
+  els.filePreviewWrap.hidden = true;
   els.inputCaption.value = '';
   els.uploadError.hidden = true;
+}
+
+els.fab.addEventListener('click', () => {
+  if (!requireName()) return;
+  resetUploadModal();
   els.modalUpload.hidden = false;
 });
 
 els.btnCancelUpload.addEventListener('click', () => { els.modalUpload.hidden = true; });
 
-els.inputFile.addEventListener('change', () => {
-  const file = els.inputFile.files[0];
+function handleFileChosen(file) {
   if (!file) return;
   pendingFile = file;
-  const url = URL.createObjectURL(file);
-  els.filePreview.src = url;
-  els.filePreview.hidden = false;
-  els.fileDropLabel.hidden = true;
-});
+  els.filePreview.src = URL.createObjectURL(file);
+  els.uploadChoice.hidden = true;
+  els.filePreviewWrap.hidden = false;
+}
+
+els.inputFileCamera.addEventListener('change', () => handleFileChosen(els.inputFileCamera.files[0]));
+els.inputFileGallery.addEventListener('change', () => handleFileChosen(els.inputFileGallery.files[0]));
+
+els.btnClearFile.addEventListener('click', resetUploadModal);
 
 els.btnSubmitUpload.addEventListener('click', async () => {
   if (!pendingFile) {
