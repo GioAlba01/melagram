@@ -19,7 +19,8 @@ const state = {
   guestId: null,
   guestName: null,
   isAdmin: false,
-  activeView: 'home', // 'home' | 'profile'
+  activeView: 'home', // 'home' | 'news' | 'profile'
+  homeSort: 'recent', // 'recent' | 'likes' — ordinamento della Home
   posts: new Map(),   // id -> { data, likeCount, commentCount, likedByMe, commentsLoaded, cardEl }
   order: [],          // id in ordine di creazione decrescente
 };
@@ -267,13 +268,32 @@ document.querySelectorAll('.js-nav').forEach(btn => {
   btn.addEventListener('click', () => switchView(btn.dataset.view));
 });
 
+// Filtro di ordinamento della Home: più recenti (default) o più like
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.homeSort = btn.dataset.sort;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+    reflowActiveView();
+  });
+});
+
+function getHomeOrder() {
+  if (state.homeSort !== 'likes') return state.order;
+  // Copia l'ordine e riordina per numero di like (a parità, il più recente prima).
+  return [...state.order].sort((a, b) => {
+    const diff = (state.posts.get(b)?.likeCount || 0) - (state.posts.get(a)?.likeCount || 0);
+    if (diff !== 0) return diff;
+    return new Date(state.posts.get(b)?.data.created_at) - new Date(state.posts.get(a)?.data.created_at);
+  });
+}
+
 function reflowActiveView() {
   if (state.activeView === 'news') return; // il feed News si gestisce da sé (vedi reflowNews)
   const container = state.activeView === 'home' ? els.feedHome : els.feedProfile;
   const emptyEl = state.activeView === 'home' ? els.emptyHome : els.emptyProfile;
 
   const ids = state.activeView === 'home'
-    ? state.order
+    ? getHomeOrder()
     : state.order.filter(id => state.posts.get(id)?.data.guest_id === state.guestId);
 
   container.innerHTML = '';
@@ -387,6 +407,8 @@ function updateCardLike(postId) {
   if (!entry?.cardEl) return;
   entry.cardEl.querySelector('.like-count').textContent = entry.likeCount;
   entry.cardEl.querySelector('.like-btn').classList.toggle('liked', entry.likedByMe);
+  // Se in Home è attivo l'ordinamento per like, la classifica si aggiorna subito.
+  if (state.activeView === 'home' && state.homeSort === 'likes') reflowActiveView();
 }
 
 function updateCardCommentCount(postId) {

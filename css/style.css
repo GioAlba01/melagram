@@ -165,6 +165,31 @@ h2 {
   gap: 24px;
 }
 
+/* ---- Filtro di ordinamento della Home ---- */
+.home-filter {
+  display: flex;
+  gap: 8px;
+  padding: 16px 14px 4px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.filter-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.filter-btn.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
 .profile-header {
   padding: 22px 14px 14px;
   display: flex;
@@ -830,6 +855,8 @@ h2 {
   .view { padding: 0 28px; }
 
   #feedProfile.feed { grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 16px 0 40px; }
+
+  .home-filter { padding: 20px 0 4px; }
 
   .news-compose { margin: 0 0 18px; }
   .news-feed { padding: 0 0 40px; }
