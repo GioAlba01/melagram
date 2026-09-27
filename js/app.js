@@ -5,6 +5,11 @@ const SUPABASE_URL = "https://pveifyerzesfnysmoaqd.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2ZWlmeWVyemVzZm55c21vYXFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1MDEyNjMsImV4cCI6MjEwNjA3NzI2M30.NUbOXAM3CT7hfKFKAiN05JXNJLn1Yx8enIjgbw1a6sc";
 const BUCKET = "wedding-photos";
 
+// URL del "Web App" di Google Apps Script che salva una copia di ogni foto
+// nel Google Drive di tuo fratello. Vuoto = backup su Drive disattivato.
+// Va compilato con l'URL che termina in /exec una volta pubblicato lo script.
+const DRIVE_BACKUP_URL = "https://script.google.com/macros/s/AKfycbzTKSKpFXEuB-gOBfpcz4gthVo3IKaeqjZoSQfAEIOp3BZ7M7AIqdyUpoNNWUV2o_f6Gg/exec";
+
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============================================================================
@@ -646,6 +651,10 @@ els.btnSubmitUpload.addEventListener('click', async () => {
 
     els.modalUpload.hidden = true;
     toast('Foto pubblicata!');
+
+    // Invia una copia della foto su Google Drive in background: non si
+    // aspetta il risultato, così non rallenta né blocca la pubblicazione.
+    backupToDrive(pendingFile, state.guestName, els.inputCaption.value.trim().slice(0, 240));
   } catch (err) {
     els.uploadError.textContent = 'Errore durante il caricamento: ' + (err.message || err);
     els.uploadError.hidden = false;
@@ -655,6 +664,37 @@ els.btnSubmitUpload.addEventListener('click', async () => {
     els.btnSubmitUpload.disabled = false;
   }
 });
+
+// ============================================================================
+// Backup automatico su Google Drive (facoltativo, non blocca la pubblicazione)
+// ============================================================================
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function backupToDrive(blob, authorName, caption) {
+  if (!DRIVE_BACKUP_URL) return; // backup non configurato: non fa nulla
+  try {
+    const base64 = await blobToBase64(blob);
+    const safeAuthor = (authorName || 'ospite').replace(/[^a-z0-9]/gi, '_');
+    const filename = `${safeAuthor}_${Date.now()}.jpg`;
+    // "no-cors": non ci serve leggere la risposta, ci basta tentare l'invio
+    // senza far fallire o rallentare la pubblicazione della foto sul sito.
+    await fetch(DRIVE_BACKUP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ imageBase64: base64, mimeType: 'image/jpeg', filename, authorName, caption }),
+    });
+  } catch (e) {
+    // Il backup su Drive è un extra: se fallisce, la foto resta comunque
+    // pubblicata regolarmente sul sito.
+  }
+}
 
 async function deletePost(postId) {
   const entry = state.posts.get(postId);
