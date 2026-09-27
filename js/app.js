@@ -193,7 +193,11 @@ els.btnSaveName.addEventListener('click', async () => {
     const { data: guestId, error } = await sb.rpc('login_guest', { p_name: name, p_password: password });
     setNameBusy(false);
     if (error || !guestId) {
-      els.nameError.textContent = 'Password errata. Riprova, oppure scegli un nome diverso.';
+      // Mostra il messaggio giusto per una password sbagliata, altrimenti
+      // il vero errore tecnico (utile per diagnosticare problemi imprevisti).
+      els.nameError.textContent = (error?.message === 'PASSWORD_ERRATA' || error?.message === 'NOME_NON_TROVATO')
+        ? 'Password errata. Riprova, oppure scegli un nome diverso.'
+        : 'Errore tecnico: ' + (error?.message || 'riprova.');
       els.nameError.hidden = false;
       return;
     }
@@ -208,7 +212,9 @@ els.btnSaveName.addEventListener('click', async () => {
     const { data: guestId, error } = await sb.rpc('register_guest', { p_name: name, p_password: password });
     setNameBusy(false);
     if (error || !guestId) {
-      els.nameError.textContent = 'Questo nome è appena stato preso da qualcun altro. Provane un altro.';
+      els.nameError.textContent = (error?.message === 'NOME_GIA_USATO')
+        ? 'Questo nome è appena stato preso da qualcun altro. Provane un altro.'
+        : 'Errore tecnico: ' + (error?.message || 'riprova.');
       els.nameError.hidden = false;
       resetNameFlow();
       return;
