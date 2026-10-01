@@ -285,6 +285,10 @@ function switchView(view) {
   els.viewNews.hidden = view !== 'news';
   els.viewProfile.hidden = view !== 'profile';
 
+  // Il "+" serve solo per aggiungere foto: in News (che è solo testo) non
+  // deve comparire.
+  els.fab.hidden = view === 'news';
+
   reflowActiveView();
 }
 
@@ -1296,4 +1300,10 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
   await loadFeed();
   await loadNews();
   subscribeRealtime();
+  document.body.classList.add('app-ready'); // nasconde la schermata di caricamento
 })();
+
+// Rete di sicurezza: se per qualsiasi motivo l'avvio sopra si bloccasse
+// (errore di rete, bug imprevisto), la schermata di caricamento non deve
+// restare incollata per sempre — dopo pochi secondi si toglie comunque.
+setTimeout(() => document.body.classList.add('app-ready'), 4000);
