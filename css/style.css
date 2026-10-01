@@ -16,12 +16,23 @@
   --danger: #A23B3B;
   color-scheme: light;
 }
-
+ 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; }
-
+html, body {
+  margin: 0;
+  height: 100%;
+  /* Impedisce al telefono di "gonfiare" automaticamente il testo durante lo
+     strappo elastico (il rimbalzo) quando si tira giù oltre la cima della
+     pagina: è questo che dava l'impressione che i testi si ingrandissero. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Disattiva il rimbalzo/elastico nativo verticale: lo gestiamo a mano col
+     pull-to-refresh, così non si somma all'effetto nativo del telefono. */
+  overscroll-behavior-y: contain;
+}
+ 
 html { touch-action: manipulation; }
-
+ 
 body {
   background: var(--bg);
   color: var(--ink);
@@ -33,10 +44,10 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-
+ 
 img { max-width: 100%; }
 [hidden] { display: none !important; }
-
+ 
 h2 {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
@@ -46,7 +57,7 @@ h2 {
   font-size: 1.55rem;
   margin-bottom: 4px;
 }
-
+ 
 /* ==========================================================================
    Shell layout — a blocchi su mobile, in riga solo da desktop in su
    ========================================================================== */
@@ -54,15 +65,15 @@ h2 {
   min-height: 100%;
   display: block;
 }
-
+ 
 .main-col {
   min-width: 0;
   padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 }
-
+ 
 /* ---- Sidebar (desktop only) ---- */
 .sidebar { display: none; }
-
+ 
 /* ---- Header mobile: barra del brand + fascia col nome, incollate insieme
    e "fisse" in cima mentre si scorre (un unico blocco sticky). ---- */
 .app-header {
@@ -70,7 +81,7 @@ h2 {
   top: env(safe-area-inset-top, 0px);
   z-index: 30;
 }
-
+ 
 .mobile-topbar {
   position: relative;
   display: flex;
@@ -90,7 +101,7 @@ h2 {
   background: radial-gradient(120% 140% at 15% -20%, rgba(255,255,255,0.22), transparent 60%);
   pointer-events: none;
 }
-
+ 
 /* Fascia col nome dell'ospite: bianca, piatta (non una card), sempre visibile
    sotto l'header in tutte le sezioni (Home/News/Profilo). */
 .user-banner {
@@ -102,7 +113,7 @@ h2 {
   box-shadow: 0 1px 0 var(--border), var(--shadow-sm);
 }
 .user-banner strong { color: var(--accent); font-weight: 700; }
-
+ 
 .brand-mark, .brand-mark-sm {
   position: relative;
   font-family: 'Cormorant Garamond', Georgia, serif;
@@ -113,7 +124,7 @@ h2 {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
 }
 .brand-mark-sm { font-size: 1.85rem; }
-
+ 
 /* Il "wrap" definisce la dimensione fissa del cerchio, l'anello bianco e il
    ritaglio; l'immagine dentro viene ingrandita (transform) in modo che il
    marchio si veda più grande/zoomato, tagliando il bordo vuoto dell'icona. */
@@ -127,7 +138,7 @@ h2 {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6), 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 .brand-logo-wrap-sm { width: 42px; height: 42px; }
-
+ 
 .brand-logo {
   display: block;
   width: 100%;
@@ -135,7 +146,7 @@ h2 {
   object-fit: cover;
   transform: scale(1.5);
 }
-
+ 
 .icon-btn {
   width: 40px;
   height: 40px;
@@ -152,7 +163,7 @@ h2 {
 }
 .icon-btn svg { width: 19px; height: 19px; }
 .icon-btn:active { background: var(--surface-2); transform: scale(0.94); }
-
+ 
 /* ---- Mobile bottom tab bar ---- */
 .mobile-tabbar {
   position: fixed;
@@ -163,7 +174,7 @@ h2 {
   box-shadow: 0 -1px 0 var(--border), 0 -6px 20px rgba(36,16,18,0.06);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-
+ 
 .tab-item {
   position: relative;
   flex: 1;
@@ -194,19 +205,19 @@ h2 {
   border-radius: 0 0 4px 4px;
   background: var(--accent);
 }
-
+ 
 /* ==========================================================================
    Feed
    ========================================================================== */
 .view { max-width: 640px; margin: 0 auto; }
-
+ 
 .feed {
   padding: 8px 14px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
-
+ 
 /* ---- Filtro di ordinamento della Home ---- */
 .home-filter {
   display: flex;
@@ -231,7 +242,7 @@ h2 {
   color: var(--accent-ink);
   border-color: var(--accent);
 }
-
+ 
 .profile-header {
   padding: 20px 14px 12px;
   display: flex;
@@ -240,7 +251,7 @@ h2 {
   gap: 10px;
   text-align: center;
 }
-
+ 
 /* ---- Griglia foto del profilo, in piccolo come Instagram ---- */
 #feedProfile.feed {
   display: grid;
@@ -260,14 +271,14 @@ h2 {
 #feedProfile .card-comments { display: none; }
 #feedProfile .card-delete { width: 26px; height: 26px; top: 5px; right: 5px; }
 #feedProfile .card-delete svg { width: 13px; height: 13px; }
-
+ 
 /* In Home il pulsante elimina si vede SOLO per l'amministratore attivo
    (classe "admin-eligible", assegnata via JS solo quando è davvero
    l'amministratore). Il semplice fatto di essere il proprietario della
    foto NON basta qui: quello vale solo dentro il Profilo (vedi sotto). */
 #feedHome .card-delete { display: none !important; }
 #feedHome .card-delete.admin-eligible:not([hidden]) { display: flex !important; }
-
+ 
 .empty-state {
   text-align: center;
   color: var(--muted);
@@ -276,14 +287,14 @@ h2 {
   font-style: italic;
   font-size: 1.15rem;
 }
-
+ 
 /* ---- Zona amministratore (solo dentro Profilo) ---- */
 .admin-zone {
   margin: 8px 14px 28px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
 }
-
+ 
 .admin-link {
   border: none;
   background: none;
@@ -295,7 +306,7 @@ h2 {
   padding: 6px 0;
 }
 .admin-link:active { color: var(--accent); }
-
+ 
 .admin-tools {
   margin-top: 12px;
   display: flex;
@@ -327,11 +338,11 @@ h2 {
 }
 .admin-tool svg { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
 .admin-tool:active { background: var(--surface-2); }
-
+ 
 .admin-tool-danger { border-color: var(--danger); color: var(--danger); }
 .admin-tool-danger svg { color: var(--danger); }
 .admin-tool-danger:active { background: rgba(162, 59, 59, 0.08); }
-
+ 
 .card {
   background: var(--surface);
   border-radius: 20px;
@@ -339,16 +350,16 @@ h2 {
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
 }
-
+ 
 .card-media {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 5;
   background: var(--surface-2);
 }
-
+ 
 .card-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
-
+ 
 .card-delete {
   position: absolute;
   top: 12px; right: 12px;
@@ -362,7 +373,7 @@ h2 {
   backdrop-filter: blur(2px);
 }
 .card-delete svg { width: 16px; height: 16px; }
-
+ 
 .card-overlay {
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -375,16 +386,16 @@ h2 {
 }
 .card-author { font-weight: 700; font-size: 0.92rem; letter-spacing: 0.01em; }
 .card-time { font-size: 0.72rem; opacity: 0.85; }
-
+ 
 .card-caption {
   margin: 0;
   padding: 15px 16px 4px;
   font-size: 0.94rem;
 }
 .card-caption:empty { display: none; }
-
+ 
 .card-actions { display: flex; gap: 22px; padding: 10px 16px 15px; }
-
+ 
 .like-btn, .comment-toggle {
   display: flex; align-items: center; gap: 7px;
   border: none; background: none;
@@ -397,7 +408,7 @@ h2 {
 .like-btn:active svg, .comment-toggle:active svg { transform: scale(1.22); }
 .like-btn.liked { color: var(--accent); }
 .like-btn.liked .heart { fill: var(--accent); stroke: var(--accent); }
-
+ 
 .card-comments {
   border-top: 1px solid var(--border);
   padding: 13px 16px 16px;
@@ -405,9 +416,9 @@ h2 {
   flex-direction: column;
   gap: 10px;
 }
-
+ 
 .comment-list { display: flex; flex-direction: column; gap: 10px; }
-
+ 
 .comment-row {
   display: flex;
   justify-content: space-between;
@@ -418,7 +429,7 @@ h2 {
 .comment-body { flex: 1; min-width: 0; }
 .comment-author { margin-right: 6px; }
 .comment-text { color: var(--ink); word-break: break-word; }
-
+ 
 .comment-edit-box { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
 .comment-edit-input {
   flex: 1;
@@ -441,7 +452,7 @@ h2 {
 }
 .comment-edit-save { background: var(--accent); color: #fff; }
 .comment-edit-cancel { background: var(--surface-2); color: var(--muted); }
-
+ 
 .comment-admin-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .comment-edit-btn, .comment-delete {
   border: none; background: none;
@@ -453,7 +464,7 @@ h2 {
   align-items: center;
 }
 .comment-edit-btn svg { width: 15px; height: 15px; }
-
+ 
 .comment-form { display: flex; gap: 8px; }
 .comment-input {
   flex: 1;
@@ -475,7 +486,7 @@ h2 {
   font-size: 0.86rem;
   cursor: pointer;
 }
-
+ 
 /* ==========================================================================
    News — messaggi di testo pubblici, stile bacheca/Twitter
    ========================================================================== */
@@ -503,14 +514,14 @@ h2 {
 }
 .news-textarea:focus { outline: none; }
 .news-send-btn { align-self: flex-end; }
-
+ 
 .news-feed {
   padding: 0 14px 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
+ 
 .news-card {
   position: relative;
   background: var(--surface);
@@ -549,7 +560,7 @@ h2 {
   display: flex;
 }
 .news-delete svg { width: 15px; height: 15px; }
-
+ 
 .news-actions { display: flex; margin-top: 6px; }
 .news-like-btn {
   display: flex; align-items: center; gap: 7px;
@@ -563,7 +574,7 @@ h2 {
 .news-like-btn:active svg { transform: scale(1.22); }
 .news-like-btn.liked { color: var(--accent); }
 .news-like-btn.liked .heart { fill: var(--accent); stroke: var(--accent); }
-
+ 
 /* ==========================================================================
    FAB — sopra la tab bar mobile
    ========================================================================== */
@@ -584,7 +595,7 @@ h2 {
 }
 .fab:active { transform: scale(0.92); }
 .fab svg { width: 26px; height: 26px; }
-
+ 
 /* ==========================================================================
    Modals — bottom sheet su mobile
    ========================================================================== */
@@ -598,7 +609,7 @@ h2 {
   z-index: 60;
   padding: 16px;
 }
-
+ 
 .modal-card {
   background: var(--surface);
   border-radius: 22px 22px 0 0;
@@ -610,9 +621,9 @@ h2 {
   gap: 12px;
   box-shadow: var(--shadow);
 }
-
+ 
 .modal-sub { color: var(--muted); font-size: 0.85rem; margin: 0 0 4px; }
-
+ 
 .modal-card input[type="text"],
 .modal-card input[type="email"],
 .modal-card input[type="password"],
@@ -627,13 +638,13 @@ h2 {
   width: 100%;
   resize: none;
 }
-
+ 
 .field-error { color: var(--danger); font-size: 0.8rem; margin: 0; }
-
+ 
 #namePasswordWrap { display: flex; flex-direction: column; gap: 8px; }
-
+ 
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
-
+ 
 .btn-primary, .btn-ghost, .btn-danger {
   border: none;
   border-radius: 12px;
@@ -650,7 +661,7 @@ h2 {
 .btn-ghost { background: transparent; color: var(--muted); }
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-primary:active, .btn-ghost:active, .btn-danger:active { transform: scale(0.97); }
-
+ 
 .spinner {
   width: 14px; height: 14px;
   border-radius: 50%;
@@ -659,7 +670,38 @@ h2 {
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
+ 
+/* ---- Indicatore "tira per ricaricare" ---- */
+.pull-indicator {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(-16px);
+  transition: opacity .12s ease;
+  z-index: 40;
+  pointer-events: none;
+}
+.pull-indicator.visible { opacity: 1; }
+.pull-indicator.releasing { transition: opacity .12s ease, transform .18s ease; }
+.pull-indicator .pull-spinner {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  transition: transform .1s linear;
+}
+.pull-indicator.loading .pull-spinner { animation: spin 0.6s linear infinite; }
+ 
 .upload-choice {
   display: flex;
   gap: 10px;
@@ -684,7 +726,7 @@ h2 {
 }
 .upload-choice-btn svg { width: 26px; height: 26px; color: var(--accent); }
 .upload-choice-btn:active { background: var(--border); }
-
+ 
 .file-preview-wrap {
   border-radius: 16px;
   overflow: hidden;
@@ -717,7 +759,7 @@ h2 {
   font-weight: 700;
   cursor: pointer;
 }
-
+ 
 /* ==========================================================================
    Slideshow
    ========================================================================== */
@@ -730,7 +772,7 @@ h2 {
 .slideshow-stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .slideshow-stage img { max-width: 100%; max-height: 100%; object-fit: contain; animation: fadein 0.6s ease; }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
-
+ 
 .slideshow-caption {
   position: absolute; left: 0; right: 0; bottom: 0;
   padding: 30px 24px calc(24px + env(safe-area-inset-bottom, 0px));
@@ -740,7 +782,7 @@ h2 {
 }
 .slideshow-author { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 1.5rem; }
 .slideshow-text { font-size: 0.95rem; opacity: 0.9; margin-top: 4px; }
-
+ 
 .slideshow-close {
   position: absolute;
   top: calc(16px + env(safe-area-inset-top, 0px));
@@ -755,7 +797,7 @@ h2 {
   cursor: pointer;
 }
 .slideshow-close svg { width: 18px; height: 18px; }
-
+ 
 /* ==========================================================================
    Toast
    ========================================================================== */
@@ -774,7 +816,7 @@ h2 {
   max-width: calc(100vw - 32px);
   text-align: center;
 }
-
+ 
 /* ==========================================================================
    Banner di installazione PWA
    ========================================================================== */
@@ -818,15 +860,15 @@ h2 {
   padding: 4px;
   line-height: 1;
 }
-
+ 
 /* ==========================================================================
    Desktop layout (≥760px) — sidebar sostituisce top/bottom bar mobile
    ========================================================================== */
 @media (min-width: 760px) {
   .app-shell { display: flex; }
-
+ 
   .app-header, .mobile-tabbar { display: none; }
-
+ 
   .sidebar {
     display: flex;
     flex-direction: column;
@@ -839,7 +881,7 @@ h2 {
     padding: 26px 20px;
     gap: 28px;
   }
-
+ 
   .sidebar-brand {
     position: relative;
     z-index: 0;
@@ -869,7 +911,7 @@ h2 {
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.85);
   }
-
+ 
   .sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
   .nav-item {
     position: relative;
@@ -898,7 +940,7 @@ h2 {
     border-radius: 3px;
     background: var(--accent);
   }
-
+ 
   .sidebar-footer {
     margin-top: auto;
     display: flex;
@@ -923,22 +965,22 @@ h2 {
     transition: background .15s ease;
   }
   .sidebar-admin-btn:hover { background: var(--surface-2); }
-
+ 
   .main-col { flex: 1; min-width: 0; padding-bottom: 40px; }
-
+ 
   .feed { padding: 16px 0 40px; }
   .view { padding: 0 28px; }
-
+ 
   #feedProfile.feed { grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 16px 0 40px; }
-
+ 
   .home-filter { padding: 20px 0 4px; }
-
+ 
   .news-compose { margin: 0 0 18px; }
   .news-feed { padding: 0 0 40px; }
-
+ 
   .fab { bottom: 28px; right: 36px; }
   .toast { bottom: 28px; }
-
+ 
   .install-banner {
     left: auto;
     right: 28px;

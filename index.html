@@ -8,7 +8,7 @@
 <meta http-equiv="Expires" content="0">
 <title>Melagram — Luca &amp; Mela</title>
 <meta name="description" content="Condividi le foto della giornata di Luca &amp; Mela">
-
+ 
 <!-- PWA: rende l'app installabile sul telefono -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#7A1F2E">
@@ -19,11 +19,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=16">
+<link rel="stylesheet" href="css/style.css?v=17">
 </head>
 <body>
 <div class="app-shell">
-
+ 
+  <!-- Indicatore "tira per ricaricare" (solo mobile) -->
+  <div id="pullIndicator" class="pull-indicator"><span class="pull-spinner"></span></div>
+ 
   <!-- ============ Sidebar (desktop) ============ -->
   <aside class="sidebar">
     <div class="sidebar-brand">
@@ -54,7 +57,7 @@
       <button class="link-btn js-change-name">Cambia nome</button>
     </div>
   </aside>
-
+ 
   <!-- ============ Mobile top bar ============ -->
   <div class="app-header">
     <header class="mobile-topbar">
@@ -67,10 +70,10 @@
       Stai postando come <strong id="guestNameBanner">…</strong>
     </div>
   </div>
-
+ 
   <!-- ============ Main column ============ -->
   <main class="main-col">
-
+ 
     <!-- Home view -->
     <section id="viewHome" class="view">
       <div class="home-filter">
@@ -82,7 +85,7 @@
         <p>Ancora nessuna foto. Sii il primo a condividere un momento della giornata.</p>
       </div>
     </section>
-
+ 
     <!-- News view -->
     <section id="viewNews" class="view" hidden>
       <div class="news-compose">
@@ -94,7 +97,7 @@
         <p>Ancora nessun messaggio. Scrivi il primo!</p>
       </div>
     </section>
-
+ 
     <!-- Profile view -->
     <section id="viewProfile" class="view" hidden>
       <div class="profile-header">
@@ -104,7 +107,7 @@
       <div id="emptyProfile" class="empty-state" hidden>
         <p>Non hai ancora pubblicato foto. Tocca il pulsante <strong>+</strong> per iniziare.</p>
       </div>
-
+ 
       <div class="admin-zone" id="adminZone" hidden>
         <button class="admin-link js-admin-open">Area amministratore</button>
         <div class="admin-tools admin-only" hidden>
@@ -125,7 +128,7 @@
       </div>
     </section>
   </main>
-
+ 
   <!-- ============ Mobile bottom tab bar ============ -->
   <nav class="mobile-tabbar">
     <button class="tab-item js-nav" data-view="news">
@@ -141,12 +144,12 @@
       <span>Profilo</span>
     </button>
   </nav>
-
+ 
   <!-- Floating action button -->
   <button id="fab" class="fab" title="Aggiungi una foto">
     <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
   </button>
-
+ 
   <!-- Name modal -->
   <div id="modalName" class="modal-overlay" hidden>
     <div class="modal-card">
@@ -167,12 +170,12 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- Upload modal -->
   <div id="modalUpload" class="modal-overlay" hidden>
     <div class="modal-card">
       <h2>Nuova foto</h2>
-
+ 
       <div id="uploadChoice" class="upload-choice">
         <label class="upload-choice-btn">
           <input id="inputFileCamera" type="file" accept="image/*" capture="environment" hidden>
@@ -180,13 +183,13 @@
           <span>Scatta una foto</span>
         </label>
       </div>
-
+ 
       <div id="filePreviewWrap" class="file-preview-wrap" hidden>
         <img id="filePreview">
         <button id="btnSavePhone" type="button" class="save-phone-btn" hidden>Salva sul telefono</button>
         <button id="btnClearFile" type="button" class="clear-file-btn">Rifai la foto</button>
       </div>
-
+ 
       <textarea id="inputCaption" placeholder="Aggiungi una didascalia (facoltativa)" maxlength="240" rows="2"></textarea>
       <p id="uploadError" class="field-error" hidden></p>
       <div class="modal-actions">
@@ -198,7 +201,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- Admin login modal -->
   <div id="modalAdmin" class="modal-overlay" hidden>
     <div class="modal-card">
@@ -221,7 +224,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- Slideshow overlay -->
   <div id="slideshow" class="slideshow" hidden>
     <button id="btnCloseSlideshow" class="slideshow-close" title="Chiudi">
@@ -235,15 +238,15 @@
       </div>
     </div>
   </div>
-
+ 
   <div id="toast" class="toast" hidden></div>
-
+ 
   <div id="installBanner" class="install-banner" hidden>
     <button id="btnInstallClose" class="install-close" aria-label="Chiudi">✕</button>
     <p id="installText" class="install-text"></p>
     <button id="btnInstallAction" class="install-action" hidden>Installa</button>
   </div>
-
+ 
   <!-- comment row template -->
   <template id="tplComment">
     <div class="comment-row">
@@ -264,7 +267,7 @@
       </div>
     </div>
   </template>
-
+ 
   <!-- news post template -->
   <template id="tplNews">
     <article class="news-card">
@@ -284,7 +287,7 @@
       </div>
     </article>
   </template>
-
+ 
   <!-- post card template -->
   <template id="tplPost">
     <article class="card">
@@ -318,12 +321,12 @@
       </div>
     </article>
   </template>
-
+ 
 </div>
-
+ 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="js/app.js?v=20"></script>
+<script src="js/app.js?v=21"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

@@ -1212,21 +1212,42 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
 // ============================================================================
 // Quando l'app è installata sul telefono (icona in home, modalità
 // "standalone"), il gesto nativo "tira giù per ricaricare" del browser non
-// è più disponibile: lo ricreiamo a mano. Funziona solo quando si parte
-// dalla cima della pagina (altrimenti sarebbe solo uno scroll normale).
+// è più disponibile: lo ricreiamo a mano, con una rotellina come riscontro
+// visivo. Importante: blocchiamo anche il "rimbalzo" elastico nativo del
+// telefono mentre si tira (preventDefault), perché è quello — non un nostro
+// errore di impaginazione — a dare l'impressione che i testi si ingrandiscano:
+// è l'effetto normale con cui i telefoni stirano la pagina oltre il bordo.
 (function setupPullToRefresh() {
   const THRESHOLD = 70; // px da tirare prima di ricaricare
+  const MAX_PULL = 90;  // oltre questo, l'indicatore non si sposta più
   let startY = null;
   let active = false;
+  let triggered = false;
+
+  const indicator = els.pullIndicator;
 
   function aModalIsOpen() {
     return !!document.querySelector('.modal-overlay:not([hidden])');
   }
 
+  function setPull(dy) {
+    const dist = Math.min(dy, MAX_PULL);
+    indicator.style.transform = `translateY(${-16 + dist}px)`;
+    indicator.classList.toggle('visible', dy > 8);
+  }
+
+  function resetIndicator() {
+    indicator.classList.add('releasing');
+    indicator.classList.remove('visible', 'loading');
+    indicator.style.transform = '';
+  }
+
   window.addEventListener('touchstart', e => {
     if (window.scrollY <= 0 && e.touches.length === 1 && !aModalIsOpen()) {
+      indicator.classList.remove('releasing');
       startY = e.touches[0].clientY;
       active = true;
+      triggered = false;
     } else {
       active = false;
       startY = null;
@@ -1234,17 +1255,30 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
   }, { passive: true });
 
   window.addEventListener('touchmove', e => {
-    if (!active || startY === null) return;
+    if (!active || startY === null || triggered) return;
     const dy = e.touches[0].clientY - startY;
-    if (dy > THRESHOLD) {
+    if (dy <= 0) {
+      // Non sta tirando verso il basso dalla cima: lascia fare lo scroll normale.
       active = false;
+      resetIndicator();
+      return;
+    }
+    // Blocca il rimbalzo/elastico nativo: senza questo il telefono stira
+    // comunque la pagina per conto suo, "sballando" il layout durante il tiro.
+    e.preventDefault();
+    setPull(dy);
+    if (dy > THRESHOLD) {
+      triggered = true;
+      indicator.classList.add('loading');
+      indicator.style.transform = `translateY(${-16 + MAX_PULL}px)`;
       window.location.reload();
     }
-  }, { passive: true });
+  }, { passive: false });
 
   window.addEventListener('touchend', () => {
     active = false;
     startY = null;
+    if (!triggered) resetIndicator();
   }, { passive: true });
 })();
 
