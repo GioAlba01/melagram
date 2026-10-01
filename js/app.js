@@ -59,8 +59,22 @@ function toast(msg, ms = 2600) {
 
 function setAdminUI(isAdmin) {
   state.isAdmin = isAdmin;
-  document.body.classList.toggle('is-admin', isAdmin);
-  document.querySelectorAll('.admin-only').forEach(el => { el.hidden = !isAdmin; });
+  // I controlli admin nell'interfaccia (eliminazioni, modifiche) si attivano
+  // solo quando è ANCHE il nome "Charge" ad essere attivo in questo momento
+  // su questo dispositivo — non basta una sessione admin rimasta agganciata.
+  const active = isAdminActive();
+  document.body.classList.toggle('is-admin', active);
+  document.querySelectorAll('.admin-only').forEach(el => { el.hidden = !active; });
+}
+
+// "Amministratore davvero attivo in questo momento": non basta che il
+// dispositivo abbia una sessione amministratore ancora valida (es. un
+// telefono condiviso dove ci si era loggati come admin ore prima) — deve
+// anche star navigando proprio col nome segreto "Charge". Così, se un
+// ospite qualsiasi usa un telefono su cui è rimasta "agganciata" una vecchia
+// sessione admin, non si ritrova per sbaglio i poteri di eliminazione.
+function isAdminActive() {
+  return state.isAdmin && (state.guestName || '').trim().toLowerCase() === 'charge';
 }
 
 function pathFromPublicUrl(url) {
@@ -388,7 +402,11 @@ function renderCard(postId, entry) {
   node.querySelector('.card-caption').textContent = p.caption || '';
 
   const delBtn = node.querySelector('.card-delete');
-  delBtn.hidden = !(state.isAdmin || p.guest_id === state.guestId);
+  delBtn.hidden = !(isAdminActive() || p.guest_id === state.guestId);
+  // Marcatore separato per l'admin: in Home il CSS mostra il pulsante SOLO
+  // se è presente questa classe, mai per il solo fatto di essere il
+  // proprietario (quello vale solo dentro il Profilo, vedi style.css).
+  delBtn.classList.toggle('admin-eligible', isAdminActive());
   delBtn.addEventListener('click', () => deletePost(postId));
 
   const likeBtn = node.querySelector('.like-btn');
@@ -489,10 +507,10 @@ function renderComment(c) {
   const editInput = node.querySelector('.comment-edit-input');
 
   const adminActions = node.querySelector('.comment-admin-actions');
-  adminActions.hidden = !state.isAdmin;
+  adminActions.hidden = !isAdminActive();
 
   const editBtn = node.querySelector('.comment-edit-btn');
-  editBtn.hidden = !state.isAdmin;
+  editBtn.hidden = !isAdminActive();
   editBtn.addEventListener('click', () => {
     editInput.value = textEl.textContent;
     textEl.hidden = true;
@@ -516,7 +534,7 @@ function renderComment(c) {
   });
 
   const delBtn = node.querySelector('.comment-delete');
-  delBtn.hidden = !state.isAdmin;
+  delBtn.hidden = !isAdminActive();
   delBtn.addEventListener('click', () => deleteComment(c.id));
 
   return node;
@@ -815,7 +833,7 @@ function renderNewsCard(item, entry) {
   node.querySelector('.news-text').textContent = item.text;
 
   const delBtn = node.querySelector('.news-delete');
-  delBtn.hidden = !state.isAdmin;
+  delBtn.hidden = !isAdminActive();
   delBtn.addEventListener('click', () => deleteNews(item.id));
 
   const likeBtn = node.querySelector('.news-like-btn');
@@ -933,14 +951,20 @@ sb.auth.onAuthStateChange((_event, session) => {
 });
 
 function refreshAllAdminButtons() {
-  // Il pulsante elimina foto si vede per l'admin oppure per chi ha pubblicato quella foto.
+  const active = isAdminActive();
+  // Il pulsante elimina foto si vede per l'admin attivo oppure per chi ha
+  // pubblicato quella foto (ma solo nel Profilo: in Home il CSS lo mostra
+  // solo se è presente la classe "admin-eligible", vedi renderCard/style.css).
   for (const entry of state.posts.values()) {
     const delBtn = entry.cardEl?.querySelector('.card-delete');
-    if (delBtn) delBtn.hidden = !(state.isAdmin || entry.data.guest_id === state.guestId);
+    if (delBtn) {
+      delBtn.hidden = !(active || entry.data.guest_id === state.guestId);
+      delBtn.classList.toggle('admin-eligible', active);
+    }
   }
-  document.querySelectorAll('.comment-admin-actions').forEach(b => { b.hidden = !state.isAdmin; });
-  document.querySelectorAll('.comment-edit-btn, .comment-delete').forEach(b => { b.hidden = !state.isAdmin; });
-  document.querySelectorAll('.news-delete').forEach(b => { b.hidden = !state.isAdmin; });
+  document.querySelectorAll('.comment-admin-actions').forEach(b => { b.hidden = !active; });
+  document.querySelectorAll('.comment-edit-btn, .comment-delete').forEach(b => { b.hidden = !active; });
+  document.querySelectorAll('.news-delete').forEach(b => { b.hidden = !active; });
 }
 
 // ============================================================================
@@ -1019,7 +1043,7 @@ els.btnExport.addEventListener('click', async () => {
 // zero il login se durante il matrimonio qualcosa nei profili si blocca.
 // ============================================================================
 els.btnResetProfiles.addEventListener('click', async () => {
-  if (!state.isAdmin) { toast('Devi essere connesso come amministratore.'); return; }
+  if (!isAdminActive()) { toast('Devi essere connesso come amministratore.'); return; }
 
   const conferma = window.prompt(
     'Questo cancella TUTTI i profili (nome + password) degli invitati: dovranno rifare la registrazione. Le foto, i like, i commenti e le news NON vengono toccati.\n\nPer confermare scrivi RESET (tutto maiuscolo):'
@@ -1182,6 +1206,47 @@ window.addEventListener('appinstalled', () => {
 if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
   setTimeout(showInstallBanner, 1500);
 }
+
+// ============================================================================
+// Pull-to-refresh manuale
+// ============================================================================
+// Quando l'app è installata sul telefono (icona in home, modalità
+// "standalone"), il gesto nativo "tira giù per ricaricare" del browser non
+// è più disponibile: lo ricreiamo a mano. Funziona solo quando si parte
+// dalla cima della pagina (altrimenti sarebbe solo uno scroll normale).
+(function setupPullToRefresh() {
+  const THRESHOLD = 70; // px da tirare prima di ricaricare
+  let startY = null;
+  let active = false;
+
+  function aModalIsOpen() {
+    return !!document.querySelector('.modal-overlay:not([hidden])');
+  }
+
+  window.addEventListener('touchstart', e => {
+    if (window.scrollY <= 0 && e.touches.length === 1 && !aModalIsOpen()) {
+      startY = e.touches[0].clientY;
+      active = true;
+    } else {
+      active = false;
+      startY = null;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchmove', e => {
+    if (!active || startY === null) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy > THRESHOLD) {
+      active = false;
+      window.location.reload();
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    active = false;
+    startY = null;
+  }, { passive: true });
+})();
 
 // ============================================================================
 // Avvio

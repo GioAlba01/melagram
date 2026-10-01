@@ -261,10 +261,12 @@ h2 {
 #feedProfile .card-delete { width: 26px; height: 26px; top: 5px; right: 5px; }
 #feedProfile .card-delete svg { width: 13px; height: 13px; }
 
-/* In Home il pulsante elimina si vede SOLO per l'amministratore (ogni ospite
-   può comunque eliminare le proprie foto, ma solo entrando nel Profilo). */
+/* In Home il pulsante elimina si vede SOLO per l'amministratore attivo
+   (classe "admin-eligible", assegnata via JS solo quando è davvero
+   l'amministratore). Il semplice fatto di essere il proprietario della
+   foto NON basta qui: quello vale solo dentro il Profilo (vedi sotto). */
 #feedHome .card-delete { display: none !important; }
-body.is-admin #feedHome .card-delete:not([hidden]) { display: flex !important; }
+#feedHome .card-delete.admin-eligible:not([hidden]) { display: flex !important; }
 
 .empty-state {
   text-align: center;
