@@ -6,9 +6,9 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Melagram — Luca e Melania</title>
+<title>Melagram — Luca &amp; Mela</title>
 <meta name="description" content="Condividi le foto della giornata di Luca &amp; Mela">
-
+ 
 <!-- PWA: rende l'app installabile sul telefono -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#7A1F2E">
@@ -19,19 +19,21 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=13">
+<link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
 <div class="app-shell">
-
+ 
   <!-- ============ Sidebar (desktop) ============ -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="sidebar-brand-row">
-        <img src="icons/icon-maskable-192.png" alt="" class="brand-logo">
+        <span class="brand-logo-wrap">
+          <img src="icons/icon-maskable-192.png" alt="" class="brand-logo">
+        </span>
         <span class="brand-mark">Melagram</span>
       </div>
-      <span class="brand-sub">Luca e Melania 03.10.2026</span>
+      <span class="brand-sub">Luca &amp; Mela</span>
     </div>
     <nav class="sidebar-nav">
       <button class="nav-item js-nav active" data-view="home">
@@ -52,32 +54,34 @@
       <button class="link-btn js-change-name">Cambia nome</button>
     </div>
   </aside>
-
+ 
   <!-- ============ Mobile top bar ============ -->
   <header class="mobile-topbar">
-    <img src="icons/icon-maskable-192.png" alt="" class="brand-logo brand-logo-sm">
+    <span class="brand-logo-wrap brand-logo-wrap-sm">
+      <img src="icons/icon-maskable-192.png" alt="" class="brand-logo brand-logo-sm">
+    </span>
     <span class="brand-mark-sm">Melagram</span>
   </header>
-
+ 
   <!-- ============ Main column ============ -->
   <main class="main-col">
-
+ 
     <!-- Home view -->
     <section id="viewHome" class="view">
       <div class="home-filter">
-        <button class="filter-btn active" data-sort="recent">Recenti</button>
-        <button class="filter-btn" data-sort="likes">Popolari</button>
+        <button class="filter-btn active" data-sort="recent">Più recenti</button>
+        <button class="filter-btn" data-sort="likes">Più like</button>
       </div>
       <div id="feedHome" class="feed"></div>
       <div id="emptyHome" class="empty-state" hidden>
         <p>Ancora nessuna foto. Sii il primo a condividere un momento della giornata.</p>
       </div>
     </section>
-
+ 
     <!-- News view -->
     <section id="viewNews" class="view" hidden>
       <div class="news-compose">
-        <textarea id="inputNews" class="news-textarea" placeholder="Un pensiero, un augurio, una battuta..." maxlength="280" rows="2"></textarea>
+        <textarea id="inputNews" class="news-textarea" placeholder="Scrivi un pensiero, un augurio, una battuta... lo vedranno tutti" maxlength="280" rows="2"></textarea>
         <button id="btnSendNews" class="btn-primary news-send-btn">Pubblica</button>
       </div>
       <div id="feedNews" class="news-feed"></div>
@@ -85,7 +89,7 @@
         <p>Ancora nessun messaggio. Scrivi il primo!</p>
       </div>
     </section>
-
+ 
     <!-- Profile view -->
     <section id="viewProfile" class="view" hidden>
       <div class="profile-header">
@@ -96,7 +100,7 @@
       <div id="emptyProfile" class="empty-state" hidden>
         <p>Non hai ancora pubblicato foto. Tocca il pulsante <strong>+</strong> per iniziare.</p>
       </div>
-
+ 
       <div class="admin-zone" id="adminZone" hidden>
         <button class="admin-link js-admin-open">Area amministratore</button>
         <div class="admin-tools admin-only" hidden>
@@ -117,7 +121,7 @@
       </div>
     </section>
   </main>
-
+ 
   <!-- ============ Mobile bottom tab bar ============ -->
   <nav class="mobile-tabbar">
     <button class="tab-item js-nav" data-view="news">
@@ -133,18 +137,18 @@
       <span>Profilo</span>
     </button>
   </nav>
-
+ 
   <!-- Floating action button -->
   <button id="fab" class="fab" title="Aggiungi una foto">
     <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
   </button>
-
+ 
   <!-- Name modal -->
   <div id="modalName" class="modal-overlay" hidden>
     <div class="modal-card">
       <h2>Come ti chiami?</h2>
       <p class="modal-sub">Il tuo nome comparirà sotto le foto, i messaggi e i commenti che pubblichi.</p>
-      <input id="inputName" type="text" placeholder="Es. Dobby Elfo" maxlength="40" autocomplete="off">
+      <input id="inputName" type="text" placeholder="Es. Giovanni" maxlength="40" autocomplete="off">
       <div id="namePasswordWrap" hidden>
         <p id="namePasswordHint" class="modal-sub"></p>
         <input id="inputNamePassword" type="password" placeholder="Password" autocomplete="off">
@@ -158,12 +162,12 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- Upload modal -->
   <div id="modalUpload" class="modal-overlay" hidden>
     <div class="modal-card">
       <h2>Nuova foto</h2>
-
+ 
       <div id="uploadChoice" class="upload-choice">
         <label class="upload-choice-btn">
           <input id="inputFileCamera" type="file" accept="image/*" capture="environment" hidden>
@@ -171,13 +175,13 @@
           <span>Scatta una foto</span>
         </label>
       </div>
-
+ 
       <div id="filePreviewWrap" class="file-preview-wrap" hidden>
         <img id="filePreview">
         <button id="btnSavePhone" type="button" class="save-phone-btn" hidden>Salva sul telefono</button>
         <button id="btnClearFile" type="button" class="clear-file-btn">Rifai la foto</button>
       </div>
-
+ 
       <textarea id="inputCaption" placeholder="Aggiungi una didascalia (facoltativa)" maxlength="240" rows="2"></textarea>
       <p id="uploadError" class="field-error" hidden></p>
       <div class="modal-actions">
@@ -189,7 +193,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- Admin login modal -->
   <div id="modalAdmin" class="modal-overlay" hidden>
     <div class="modal-card">
@@ -212,7 +216,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- Slideshow overlay -->
   <div id="slideshow" class="slideshow" hidden>
     <button id="btnCloseSlideshow" class="slideshow-close" title="Chiudi">
@@ -226,15 +230,15 @@
       </div>
     </div>
   </div>
-
+ 
   <div id="toast" class="toast" hidden></div>
-
+ 
   <div id="installBanner" class="install-banner" hidden>
     <button id="btnInstallClose" class="install-close" aria-label="Chiudi">✕</button>
     <p id="installText" class="install-text"></p>
     <button id="btnInstallAction" class="install-action" hidden>Installa</button>
   </div>
-
+ 
   <!-- comment row template -->
   <template id="tplComment">
     <div class="comment-row">
@@ -255,7 +259,7 @@
       </div>
     </div>
   </template>
-
+ 
   <!-- news post template -->
   <template id="tplNews">
     <article class="news-card">
@@ -269,7 +273,7 @@
       <p class="news-text"></p>
     </article>
   </template>
-
+ 
   <!-- post card template -->
   <template id="tplPost">
     <article class="card">
@@ -303,9 +307,9 @@
       </div>
     </article>
   </template>
-
+ 
 </div>
-
+ 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="js/app.js?v=18"></script>

@@ -71,31 +71,53 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 11px;
+  gap: 12px;
   padding: calc(16px + env(safe-area-inset-top, 0px)) 18px 16px;
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
   box-shadow: 0 4px 18px rgba(92, 20, 32, 0.35);
+  overflow: hidden;
+}
+.mobile-topbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(120% 140% at 15% -20%, rgba(255,255,255,0.22), transparent 60%);
+  pointer-events: none;
 }
 
 .brand-mark, .brand-mark-sm {
+  position: relative;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
   font-weight: 700;
   color: #fff;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+  letter-spacing: 0.015em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
 }
-.brand-mark-sm { font-size: 1.65rem; }
+.brand-mark-sm { font-size: 1.85rem; }
 
-.brand-logo {
+/* Il "wrap" definisce la dimensione fissa del cerchio, l'anello bianco e il
+   ritaglio; l'immagine dentro viene ingrandita (transform) in modo che il
+   marchio si veda più grande/zoomato, tagliando il bordo vuoto dell'icona. */
+.brand-logo-wrap {
+  position: relative;
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  object-fit: cover;
+  overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6), 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-.brand-logo-sm { width: 40px; height: 40px; }
+.brand-logo-wrap-sm { width: 42px; height: 42px; }
+
+.brand-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.5);
+}
 
 .icon-btn {
   width: 40px;
@@ -194,24 +216,24 @@ h2 {
 }
 
 .profile-header {
-  padding: 24px 14px 16px;
+  padding: 18px 14px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-align: center;
 }
 .profile-name {
   margin: 0;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
-  font-weight: 700;
-  font-size: 1.7rem;
+  font-weight: 600;
+  font-size: 1.05rem;
   color: #fff;
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-  padding: 14px 30px;
+  padding: 7px 18px;
   border-radius: 999px;
-  box-shadow: 0 8px 22px rgba(92, 20, 32, 0.3);
+  box-shadow: 0 4px 12px rgba(92, 20, 32, 0.25);
   display: inline-block;
   max-width: 100%;
 }
@@ -237,9 +259,10 @@ h2 {
 #feedProfile .card-delete { width: 26px; height: 26px; top: 5px; right: 5px; }
 #feedProfile .card-delete svg { width: 13px; height: 13px; }
 
-/* Il pulsante elimina foto si vede solo nel Profilo (proprie foto o admin),
-   mai mischiato nella Home tra le foto di tutti. */
+/* In Home il pulsante elimina si vede SOLO per l'amministratore (ogni ospite
+   può comunque eliminare le proprie foto, ma solo entrando nel Profilo). */
 #feedHome .card-delete { display: none !important; }
+body.is-admin #feedHome .card-delete:not([hidden]) { display: flex !important; }
 
 .empty-state {
   text-align: center;
@@ -800,6 +823,8 @@ h2 {
   }
 
   .sidebar-brand {
+    position: relative;
+    z-index: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -807,10 +832,19 @@ h2 {
     border-radius: 18px;
     padding: 20px 18px;
     box-shadow: 0 10px 24px rgba(92, 20, 32, 0.3);
+    overflow: hidden;
   }
-  .sidebar-brand-row { display: flex; align-items: center; gap: 12px; }
+  .sidebar-brand::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(120% 140% at 15% -20%, rgba(255,255,255,0.22), transparent 60%);
+    pointer-events: none;
+  }
+  .sidebar-brand-row { position: relative; display: flex; align-items: center; gap: 12px; }
   .sidebar-brand .brand-mark { font-size: 1.9rem; }
-  .sidebar-brand-row .brand-logo { width: 54px; height: 54px; }
+  .sidebar-brand-row .brand-logo-wrap { width: 54px; height: 54px; }
   .brand-sub {
     font-size: 0.74rem;
     letter-spacing: 0.08em;
