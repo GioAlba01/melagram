@@ -18,43 +18,12 @@
 <meta name="apple-mobile-web-app-title" content="Melagram">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=18">
-
-<!-- Stile "critico": scritto qui invece che nel file .css esterno apposta,
-     così è già pronto nell'istante in cui la pagina inizia a disegnarsi,
-     senza aspettare che si scarichi nient'altro. Copre tutto con un colore
-     pieno finché l'app non è davvero pronta, cancellando qualsiasi sfarfallio
-     di stile/font non ancora caricati durante un ricaricamento. -->
-<style>
-  #reloadOverlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: #7A1F2E;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity .25s ease;
-  }
-  #reloadOverlay .reload-spin {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 3px solid rgba(255,255,255,0.35);
-    border-top-color: #fff;
-    animation: reloadSpin .7s linear infinite;
-  }
-  @keyframes reloadSpin { to { transform: rotate(360deg); } }
-  body.app-ready #reloadOverlay { opacity: 0; pointer-events: none; }
-</style>
+<!-- Pesi 600 e 700 del Cormorant Garamond: prima veniva scaricato solo il 600,
+     per cui il "grassetto" del titolo Melagram non poteva vedersi davvero. -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body>
-
-<!-- Schermata di caricamento: nasconde ogni ricaricamento (manuale, pull-to-
-     refresh, cambio profilo) finché l'app non ha davvero finito di
-     caricare — niente più testo "storto" visibile durante il caricamento. -->
-<div id="reloadOverlay"><div class="reload-spin"></div></div>
 
 <div class="app-shell">
 
@@ -360,7 +329,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="js/app.js?v=22"></script>
+<script src="js/app.js?v=23"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

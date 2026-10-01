@@ -1212,21 +1212,44 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
 }
 
 // ============================================================================
+// Aggiornamento dei contenuti senza ricaricare la pagina
+// ============================================================================
+// Ricarica foto, like e news prendendoli di nuovo dal server, ma SENZA
+// ricaricare la pagina: niente ricaricamento = niente font che si ricaricano,
+// niente sfarfallio, niente layout che si sballa. È quello che serve al
+// pull-to-refresh: in pratica l'utente vede solo la rotellina e i contenuti
+// aggiornati, esattamente come in Instagram.
+async function refreshContent() {
+  // Azzera lo stato in memoria e svuota i contenitori, altrimenti i caricamenti
+  // qui sotto considererebbero i post già presenti e non li ridisegnerebbero.
+  state.posts.clear();
+  state.order = [];
+  els.feedHome.innerHTML = '';
+  els.feedProfile.innerHTML = '';
+
+  newsState.items.clear();
+  newsState.order = [];
+  els.feedNews.innerHTML = '';
+
+  await loadFeed();
+  await loadNews();
+}
+
+// ============================================================================
 // Pull-to-refresh manuale
 // ============================================================================
 // Quando l'app è installata sul telefono (icona in home, modalità
 // "standalone"), il gesto nativo "tira giù per ricaricare" del browser non
-// è più disponibile: lo ricreiamo a mano, con una rotellina come riscontro
-// visivo. Importante: blocchiamo anche il "rimbalzo" elastico nativo del
-// telefono mentre si tira (preventDefault), perché è quello — non un nostro
-// errore di impaginazione — a dare l'impressione che i testi si ingrandiscano:
-// è l'effetto normale con cui i telefoni stirano la pagina oltre il bordo.
+// è più disponibile: lo ricreiamo a mano, con la rotellina come riscontro
+// visivo. Blocchiamo anche il "rimbalzo" elastico nativo del telefono mentre
+// si tira (preventDefault): è quello che stira la pagina oltre il bordo.
 (function setupPullToRefresh() {
   const THRESHOLD = 70; // px da tirare prima di ricaricare
   const MAX_PULL = 90;  // oltre questo, l'indicatore non si sposta più
   let startY = null;
-  let active = false;
-  let triggered = false;
+  let active = false;      // il gesto è partito dalla cima della pagina
+  let triggered = false;   // in questo gesto l'aggiornamento è già partito
+  let refreshing = false;  // aggiornamento in corso (rotellina che gira)
 
   const indicator = els.pullIndicator;
 
@@ -1259,30 +1282,39 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
   }, { passive: true });
 
   window.addEventListener('touchmove', e => {
-    if (!active || startY === null || triggered) return;
+    if (!active || startY === null) return;
     const dy = e.touches[0].clientY - startY;
     if (dy <= 0) {
       // Non sta tirando verso il basso dalla cima: lascia fare lo scroll normale.
       active = false;
-      resetIndicator();
+      if (!refreshing) resetIndicator();
       return;
     }
-    // Blocca il rimbalzo/elastico nativo: senza questo il telefono stira
-    // comunque la pagina per conto suo, "sballando" il layout durante il tiro.
+    // Blocca il rimbalzo/elastico nativo per tutta la durata del gesto:
+    // senza questo il telefono stira comunque la pagina per conto suo.
     e.preventDefault();
+    if (triggered) return; // in questo gesto è già partito: non ripartire
     setPull(dy);
     if (dy > THRESHOLD) {
       triggered = true;
+      refreshing = true;
       indicator.classList.add('loading');
       indicator.style.transform = `translateY(${-16 + MAX_PULL}px)`;
-      window.location.reload();
+      // Aggiorna i contenuti senza ricaricare la pagina: la rotellina gira
+      // finché non è finito, poi rientra.
+      refreshContent()
+        .catch(() => toast('Aggiornamento non riuscito, riprova.'))
+        .finally(() => {
+          refreshing = false;
+          resetIndicator();
+        });
     }
   }, { passive: false });
 
   window.addEventListener('touchend', () => {
     active = false;
     startY = null;
-    if (!triggered) resetIndicator();
+    if (!refreshing) resetIndicator();
   }, { passive: true });
 })();
 
@@ -1300,10 +1332,4 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
   await loadFeed();
   await loadNews();
   subscribeRealtime();
-  document.body.classList.add('app-ready'); // nasconde la schermata di caricamento
 })();
-
-// Rete di sicurezza: se per qualsiasi motivo l'avvio sopra si bloccasse
-// (errore di rete, bug imprevisto), la schermata di caricamento non deve
-// restare incollata per sempre — dopo pochi secondi si toglie comunque.
-setTimeout(() => document.body.classList.add('app-ready'), 4000);
