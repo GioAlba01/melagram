@@ -95,7 +95,10 @@ function loadIdentity() {
 function updateGuestLabels() {
   const label = state.guestName || '…';
   if (els.guestNameLabel) els.guestNameLabel.textContent = label;
-  if (els.guestNameLabel2) els.guestNameLabel2.textContent = label;
+  if (els.guestNameBanner) els.guestNameBanner.textContent = label;
+  // La fascia col nome si vede solo a login avvenuto (non durante la
+  // registrazione obbligatoria iniziale, quando il nome non esiste ancora).
+  if (els.userBanner) els.userBanner.hidden = !state.guestName;
   refreshAdminZoneVisibility();
 }
 
@@ -132,9 +135,16 @@ function openNameModal() {
   els.inputName.value = state.guestName || '';
   els.nameError.hidden = true;
   resetNameFlow();
+  // Il pulsante "Annulla" si vede solo se hai già un nome: la primissima
+  // registrazione, invece, resta obbligatoria (non si può chiudere a vuoto).
+  els.btnCancelName.hidden = !state.guestName;
   els.modalName.hidden = false;
   setTimeout(() => els.inputName.focus(), 50);
 }
+
+els.btnCancelName.addEventListener('click', () => {
+  els.modalName.hidden = true;
+});
 
 function applyLogin(guestId, name) {
   // Ricarica subito la pagina invece di aggiornare lo stato "a caldo":
@@ -737,13 +747,13 @@ async function deletePost(postId) {
 const tplNews = document.getElementById('tplNews');
 const newsState = {
   order: [],        // id in ordine di creazione decrescente
-  items: new Map(),  // id -> { data, cardEl }
+  items: new Map(),  // id -> { data, cardEl, likeCount, likedByMe }
 };
 
 async function loadNews() {
   const { data, error } = await sb
     .from('news')
-    .select('id, guest_id, author_name, text, created_at')
+    .select('id, guest_id, author_name, text, created_at, news_likes(count)')
     .order('created_at', { ascending: false })
     .limit(300);
 
@@ -751,14 +761,32 @@ async function loadNews() {
     toast('Impossibile caricare i messaggi: ' + error.message);
     return;
   }
-  for (const n of data) addNewsToState(n);
+
+  const { data: myNewsLikes } = await sb
+    .from('news_likes')
+    .select('news_id')
+    .eq('guest_id', state.guestId);
+  const likedSet = new Set((myNewsLikes || []).map(l => l.news_id));
+
+  for (const n of data) {
+    addNewsToState(n, {
+      likeCount: n.news_likes?.[0]?.count || 0,
+      likedByMe: likedSet.has(n.id),
+    });
+  }
   reflowNews();
 }
 
-function addNewsToState(item) {
+function addNewsToState(item, counts = {}) {
   if (newsState.items.has(item.id)) return;
-  const cardEl = renderNewsCard(item);
-  newsState.items.set(item.id, { data: item, cardEl });
+  const entry = {
+    data: item,
+    cardEl: null,
+    likeCount: counts.likeCount || 0,
+    likedByMe: !!counts.likedByMe,
+  };
+  entry.cardEl = renderNewsCard(item, entry);
+  newsState.items.set(item.id, entry);
   newsState.order.push(item.id);
   newsState.order.sort((a, b) => new Date(newsState.items.get(b).data.created_at) - new Date(newsState.items.get(a).data.created_at));
 }
@@ -779,7 +807,7 @@ function reflowNews() {
   els.emptyNews.hidden = newsState.order.length > 0;
 }
 
-function renderNewsCard(item) {
+function renderNewsCard(item, entry) {
   const node = tplNews.content.firstElementChild.cloneNode(true);
   node.dataset.newsId = item.id;
   node.querySelector('.news-author').textContent = item.author_name;
@@ -790,7 +818,41 @@ function renderNewsCard(item) {
   delBtn.hidden = !state.isAdmin;
   delBtn.addEventListener('click', () => deleteNews(item.id));
 
+  const likeBtn = node.querySelector('.news-like-btn');
+  const likeCountEl = node.querySelector('.news-like-count');
+  likeCountEl.textContent = entry.likeCount;
+  likeBtn.classList.toggle('liked', entry.likedByMe);
+  likeBtn.addEventListener('click', () => toggleNewsLike(item.id));
+
   return node;
+}
+
+function updateNewsLike(newsId) {
+  const entry = newsState.items.get(newsId);
+  if (!entry?.cardEl) return;
+  entry.cardEl.querySelector('.news-like-count').textContent = entry.likeCount;
+  entry.cardEl.querySelector('.news-like-btn').classList.toggle('liked', entry.likedByMe);
+}
+
+async function toggleNewsLike(newsId) {
+  if (!requireName()) return;
+  const entry = newsState.items.get(newsId);
+  if (!entry) return;
+
+  if (entry.likedByMe) {
+    entry.likedByMe = false;
+    entry.likeCount = Math.max(0, entry.likeCount - 1);
+    updateNewsLike(newsId);
+    const { error } = await sb.from('news_likes').delete()
+      .eq('news_id', newsId).eq('guest_id', state.guestId);
+    if (error) { entry.likedByMe = true; entry.likeCount++; updateNewsLike(newsId); }
+  } else {
+    entry.likedByMe = true;
+    entry.likeCount++;
+    updateNewsLike(newsId);
+    const { error } = await sb.from('news_likes').insert({ news_id: newsId, guest_id: state.guestId });
+    if (error) { entry.likedByMe = false; entry.likeCount = Math.max(0, entry.likeCount - 1); updateNewsLike(newsId); }
+  }
 }
 
 async function submitNews() {
@@ -1045,6 +1107,20 @@ function subscribeRealtime() {
     })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'news' }, payload => {
       removeNewsFromState(payload.old.id);
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'news_likes' }, payload => {
+      const entry = newsState.items.get(payload.new.news_id);
+      if (!entry) return;
+      if (payload.new.guest_id === state.guestId) return;
+      entry.likeCount++;
+      updateNewsLike(payload.new.news_id);
+    })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'news_likes' }, payload => {
+      const entry = newsState.items.get(payload.old.news_id);
+      if (!entry) return;
+      if (payload.old.guest_id === state.guestId) return;
+      entry.likeCount = Math.max(0, entry.likeCount - 1);
+      updateNewsLike(payload.old.news_id);
     })
     .subscribe();
 }

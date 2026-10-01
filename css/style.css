@@ -63,11 +63,16 @@ h2 {
 /* ---- Sidebar (desktop only) ---- */
 .sidebar { display: none; }
 
-/* ---- Mobile top bar ---- */
-.mobile-topbar {
+/* ---- Header mobile: barra del brand + fascia col nome, incollate insieme
+   e "fisse" in cima mentre si scorre (un unico blocco sticky). ---- */
+.app-header {
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 30;
+}
+
+.mobile-topbar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,6 +90,18 @@ h2 {
   background: radial-gradient(120% 140% at 15% -20%, rgba(255,255,255,0.22), transparent 60%);
   pointer-events: none;
 }
+
+/* Fascia col nome dell'ospite: bianca, piatta (non una card), sempre visibile
+   sotto l'header in tutte le sezioni (Home/News/Profilo). */
+.user-banner {
+  background: var(--surface);
+  color: var(--ink);
+  text-align: center;
+  padding: 11px 16px;
+  font-size: 1.05rem;
+  box-shadow: 0 1px 0 var(--border), var(--shadow-sm);
+}
+.user-banner strong { color: var(--accent); font-weight: 700; }
 
 .brand-mark, .brand-mark-sm {
   position: relative;
@@ -216,28 +233,13 @@ h2 {
 }
 
 .profile-header {
-  padding: 18px 14px 12px;
+  padding: 20px 14px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
   text-align: center;
 }
-.profile-name {
-  margin: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 1.05rem;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-  padding: 7px 18px;
-  border-radius: 999px;
-  box-shadow: 0 4px 12px rgba(92, 20, 32, 0.25);
-  display: inline-block;
-  max-width: 100%;
-}
-.profile-name strong { color: #fff; font-weight: 700; }
 
 /* ---- Griglia foto del profilo, in piccolo come Instagram ---- */
 #feedProfile.feed {
@@ -546,6 +548,20 @@ body.is-admin #feedHome .card-delete:not([hidden]) { display: flex !important; }
 }
 .news-delete svg { width: 15px; height: 15px; }
 
+.news-actions { display: flex; margin-top: 6px; }
+.news-like-btn {
+  display: flex; align-items: center; gap: 7px;
+  border: none; background: none;
+  color: var(--muted);
+  font-size: 0.86rem; font-weight: 700;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+.news-like-btn svg { width: 19px; height: 19px; transition: transform .15s cubic-bezier(.34,1.56,.64,1); }
+.news-like-btn:active svg { transform: scale(1.22); }
+.news-like-btn.liked { color: var(--accent); }
+.news-like-btn.liked .heart { fill: var(--accent); stroke: var(--accent); }
+
 /* ==========================================================================
    FAB — sopra la tab bar mobile
    ========================================================================== */
@@ -807,7 +823,7 @@ body.is-admin #feedHome .card-delete:not([hidden]) { display: flex !important; }
 @media (min-width: 760px) {
   .app-shell { display: flex; }
 
-  .mobile-topbar, .mobile-tabbar { display: none; }
+  .app-header, .mobile-tabbar { display: none; }
 
   .sidebar {
     display: flex;
